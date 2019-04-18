@@ -1,4 +1,24 @@
-AccretR_hierarchy <- function(){
+	# AccretR, a program to calculate the composition of an icy ocean world using the building blocks of our solar system.
+	# Copyright (C) 2019 Mohit Melwani Daswani
+
+    # This program is free software: you can redistribute it and/or modify
+    # it under the terms of the GNU General Public License as published by
+    # the Free Software Foundation, either version 3 of the License, or
+    # (at your option) any later version.
+
+    # This program is distributed in the hope that it will be useful,
+    # but WITHOUT ANY WARRANTY; without even the implied warranty of
+    # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    # GNU General Public License for more details.
+
+    # You should have received a copy of the GNU General Public License
+    # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	
+	# Author contact details:
+	# Mohit Melwani Daswani
+	# melwani.mohit@gmail.com
+
+AccretR <- function(){
     
     # Load the package to parallelize
     library(foreach)
@@ -7,13 +27,14 @@ AccretR_hierarchy <- function(){
     library(doParallel)
     library(plyr)
     library(ggplot2)
+	library(scales)
     
     #Set the output file
     
     # Start the timer
     time_stamp <- proc.time()
     
-    # Number of workers to be used
+    # Input number of workers/cores to be used. Function detectCores gives the total number of cores available on your system. Change if you will need fewer cores (a good idea if you are running other tasks, and AccretR is using too much memory). 
     cl <- makeCluster(detectCores()-1)
     registerDoParallel(cl)
     
@@ -22,7 +43,7 @@ AccretR_hierarchy <- function(){
     Earth_radius_m <- 6371000
     G <- 6.67408e-11
     
-    # Compositions of the building materials in weight percent. Composition from Lodders and Fegley (1998), normalized to 100 wt. %. Bulk densities from Flynn et al. (2018). Heat capacities from Ostrowski and Bryson (2019).In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, density in kg/m3, heat capacity in J/(kg*K^-1))
+    # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998), normalized to 100 wt. %. Bulk densities from Flynn et al. (2018). Heat capacities from Ostrowski and Bryson (2019).In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
     CI_composition <- c(2.07,3.530,9.94,0.89,10.9,5.54,0.95,18.65,47.54,1570,500)
     CM_composition <- c(1.44,2.26,11.8,1.16,13.04,2.77,1.32,21.86,44.34,2270,500)
     CV_composition <- c(0.29,0.55,14.74,1.73,16.18,2.27,1.9,24.22,38.13,2970,500)
@@ -46,13 +67,12 @@ AccretR_hierarchy <- function(){
         E_accretion <- 0
         Delta_T <- 0
         total_body_heat_capacity <- 0
-        total_body_radius <- 0
+        total_body_radius <- 10
         Temperature_diff <- 0
-        particle_radius <- 1
         
         repeat{
-            # Radius of the accreting particle, in m.
-            particle_radius <- runif(1,0.5*particle_radius,2*particle_radius)
+            # Radius of the accreting particles, in m. Here, it is a random uniform distribution proportional to the total body radius (a type of runaway growth).
+            particle_radius <- runif(1,0.1*total_body_radius,0.5*total_body_radius)
             # Volume of the accreting particle, in m^3.
             particle_volume <- 4/3*pi*(particle_radius^3)
             
@@ -89,7 +109,7 @@ AccretR_hierarchy <- function(){
             particle_heat_capacity <- as.numeric(unlist_vector[[12]])
             total_body_heat_capacity <- (total_body_heat_capacity*total_body_mass + particle_heat_capacity*particle_mass)/(total_body_mass + particle_mass)
             
-            # Calculate total body mass and radius according to specified growth track (given in Earth radii and masses, from Sotin et al. 2007 Icarus paper, modified to fit Europa)
+            # Calculate total body mass and radius according to specified growth track (given in Earth radii and masses, from Sotin et al. 2007 Icarus paper, here modified to fit Europa specifically)
             total_body_mass <- total_body_mass + particle_mass
             total_body_radius <- ((1.072*(total_body_mass/Earth_mass_kg)^0.306)*Earth_radius_m)
             total_body_bulk_density <- total_body_mass/(4/3*pi*(total_body_radius^3))
@@ -107,11 +127,9 @@ AccretR_hierarchy <- function(){
         return(list("H wt. %" = H_wt_perc, "C wt. %" = C_wt_perc, "Mg wt. %" = Mg_wt_perc, "Al wt. %" = Al_wt_perc, "Si wt. %" = Si_wt_perc, "S wt. %" = S_wt_perc, "Ca wt. %" = Ca_wt_perc, "Fe wt. %" = Fe_wt_perc, "O wt. %" = O_wt_perc, "body radius (m)" = total_body_radius, "body mass (kg)" = total_body_mass, "body bulk density (kg/m^3)" = total_body_bulk_density, "Energy of accretion (J/(kg*K^-1))" = E_accretion, "Temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff, "Number of particles"=N_particles))
     }
     
-    # Repeat the main subroutine X times and output all results into a transposed dataframe
+    # Number of full bodies to build for statistics. Repeat the main subroutine X times and output all results into a transposed dataframe.
     Total_bootstrap_run <- foreach(i=1:10000) %dopar% {AccretR_main_subroutine()}
     Total_bootstrap_run_frame <- as.data.frame((Total_bootstrap_run))
-    # Repeat the main subroutine X times and output all results into a transposed dataframe
-    #Total_bootstrap_run_frame <- as.data.frame(t(replicate(3,{AccretR_main_subroutine()})))
     
     # Output means and standard deviations of the data gathered in the data frame
     N_particles_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Number.of.particles", colnames(Total_bootstrap_run_frame))]))
@@ -214,24 +232,43 @@ AccretR_hierarchy <- function(){
             }
         }
     }
+	
+	# Fancy scientific labels in the ggplot graphs. Choose labels = fancy_scientific" for 10^y notation, or "scientific" for +e^y notation.
+	fancy_scientific <- function(l) {
+        # turn in to character string in scientific notation
+        l <- format(l, scientific = TRUE)
+        # Print "0 x 10\u{207a}" as 0
+        l <- gsub("0e\\+00","0",l)
+        # quote the part before the exponent to keep all the digits
+        l <- gsub("^(.*)e", "'\\1'e", l)
+        # remove + after exponent, if exists. E.g.: (3x10^+2 -> 3x10^2)
+        l <- gsub("e\\+","e",l)
+        # turn the 'e+' into plotmath format
+        l <- gsub("e", "%*%10^", l)
+        # convert 1x10^ or 1.000x10^ -> 10^ 
+        l <- gsub("\\'1[\\.0]*\\'\\%\\*\\%", "", l)
+        # return this as an expression
+        parse(text=l)
+    }
+	
     # AccretR histogram plots sensu strictu
     N_particles_all_runs_frame <- ldply(N_particles_all_runs, data.frame)
-    N_particles_all_runs_plot <<- ggplot(N_particles_all_runs_frame, aes(x=X..i..)) + geom_histogram() + geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Number of accreting particles") + theme_bw()
+    N_particles_all_runs_plot <<- ggplot(N_particles_all_runs_frame, aes(x=X..i..)) + geom_histogram() + geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Number of accreting planetesimals") + theme_bw()
     
     Total_body_radius_all_runs_frame <- ldply(Total_body_radius_all_runs, data.frame)
-    Total_body_radius_all_runs_plot <<- ggplot(Total_body_radius_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Total body radius (m)") + theme_bw()
+    Total_body_radius_all_runs_plot <<- ggplot(Total_body_radius_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Total body radius (m)") + theme_bw()
     
     Total_body_mass_all_runs_frame <- ldply(Total_body_mass_all_runs, data.frame)
-    Total_body_mass_all_runs_plot <<- ggplot(Total_body_mass_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Total body mass (kg)") + theme_bw()
+    Total_body_mass_all_runs_plot <<- ggplot(Total_body_mass_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Total body mass (kg)") + theme_bw()
     
     Total_body_density_all_runs_frame <- ldply(Total_body_density_all_runs, data.frame)
-    Total_body_density_all_runs_plot <<- ggplot(Total_body_density_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab((expression(paste("Bulk body densities ",kg/m^3)))) + theme_bw()
+    Total_body_density_all_runs_plot <<- ggplot(Total_body_density_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab((expression(paste("Bulk body densities (",kg/m^3,")")))) + theme_bw()
     
     Accretion_energy_all_runs_frame <- ldply(Accretion_energy_all_runs, data.frame)
-    Accretion_energy_all_runs_plot <<- ggplot(Accretion_energy_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Accretion energies (J)") + theme_bw()
+    Accretion_energy_all_runs_plot <<- ggplot(Accretion_energy_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Accretion energies (J)") + theme_bw()
     
     Temperature_diff_all_runs_frame <- ldply(Temperature_diff_all_runs, data.frame)
-    Temperature_diff_all_runs_plot <<- ggplot(Temperature_diff_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Temperature difference between body surface and accretion disk (K)") + theme_bw()
+    Temperature_diff_all_runs_plot <<- ggplot(Temperature_diff_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Temperature difference between body surface and accretion disk (K)") + theme_bw()
     
     AccretR_body_result_plot <<- multiplot(N_particles_all_runs_plot, Total_body_radius_all_runs_plot, Total_body_mass_all_runs_plot, Total_body_density_all_runs_plot, Accretion_energy_all_runs_plot, Temperature_diff_all_runs_plot, cols=2)
     
@@ -263,15 +300,14 @@ AccretR_hierarchy <- function(){
     O_wt_perc_all_runs_plot <<- ggplot(O_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Bulk O wt. %") + theme_bw()
     
     Max_water_wt_perc_all_runs_frame <- ldply(Max_water_wt_perc_all_runs, data.frame)
-    Max_water_wt_perc_all_runs_plot <<- ggplot(Max_water_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab((expression(paste(H[2],"O wt. %")))) + theme_bw()
+    Max_water_wt_perc_all_runs_plot <<- ggplot(Max_water_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab((expression(paste("Maximal ", H[2],"O wt. %")))) + theme_bw()
     
     AccretR_composition_result_plot <<- multiplot(H_wt_perc_all_runs_plot, C_wt_perc_all_runs_plot, Mg_wt_perc_all_runs_plot, Al_wt_perc_all_runs_plot, Si_wt_perc_all_runs_plot, S_wt_perc_all_runs_plot, Ca_wt_perc_all_runs_plot, Fe_wt_perc_all_runs_plot, O_wt_perc_all_runs_plot, Max_water_wt_perc_all_runs_plot, cols=2)
     
-    # Free up the cluster
+    # Free up the cores in the cluster
     stopCluster(cl)
     
     # Return results
     AccretR_result <<- (list("Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
     return(AccretR_result)
 }
-
