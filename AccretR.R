@@ -19,7 +19,8 @@
 	# melwani.mohit@gmail.com
 
 AccretR <- function(){
-    
+    cat("AccretR, a program to calculate the composition of a spherical planetary body using the building blocks of our solar system.\nCopyright (C) 2019 Mohit Melwani Daswani.\n\nRunning...")
+	
     # Load the package to parallelize
     library(foreach)
     library(iterators)
@@ -27,9 +28,7 @@ AccretR <- function(){
     library(doParallel)
     library(plyr)
     library(ggplot2)
-	library(scales)
-    
-    #Set the output file
+    library(scales)
     
     # Start the timer
     time_stamp <- proc.time()
@@ -128,56 +127,72 @@ AccretR <- function(){
     }
     
     # Number of full bodies to build for statistics. Repeat the main subroutine X times and output all results into a transposed dataframe.
-    Total_bootstrap_run <- foreach(i=1:10000) %dopar% {AccretR_main_subroutine()}
+	N_simulations <- 10000
+    Total_bootstrap_run <- foreach(i=1:N_simulations) %dopar% {AccretR_main_subroutine()}
     Total_bootstrap_run_frame <- as.data.frame((Total_bootstrap_run))
     
     # Output means and standard deviations of the data gathered in the data frame
     N_particles_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Number.of.particles", colnames(Total_bootstrap_run_frame))]))
     N_particles_mean <- mean(N_particles_all_runs)
     N_particles_sd <- sd(N_particles_all_runs)
-    H_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("H.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	H_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("H.wt.", colnames(Total_bootstrap_run_frame))]))
     H_wt_perc_mean <- mean(H_wt_perc_all_runs)
     H_wt_perc_sd <- sd(H_wt_perc_all_runs) 	
-    C_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("C.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	C_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("C.wt.", colnames(Total_bootstrap_run_frame))]))
     C_wt_perc_mean <- mean(C_wt_perc_all_runs)
     C_wt_perc_sd <- sd(C_wt_perc_all_runs) 	
-    Mg_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Mg.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	Mg_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Mg.wt.", colnames(Total_bootstrap_run_frame))]))
     Mg_wt_perc_mean <- mean(Mg_wt_perc_all_runs)
     Mg_wt_perc_sd <- sd(Mg_wt_perc_all_runs) 	
-    Al_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Al.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	Al_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Al.wt.", colnames(Total_bootstrap_run_frame))]))
     Al_wt_perc_mean <- mean(Al_wt_perc_all_runs)
     Al_wt_perc_sd <- sd(Al_wt_perc_all_runs) 	
-    Si_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Si.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	Si_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Si.wt.", colnames(Total_bootstrap_run_frame))]))
     Si_wt_perc_mean <- mean(Si_wt_perc_all_runs)
     Si_wt_perc_sd <- sd(Si_wt_perc_all_runs) 	
-    S_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("S.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	S_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("S.wt.", colnames(Total_bootstrap_run_frame))]))
     S_wt_perc_mean <- mean(S_wt_perc_all_runs)
     S_wt_perc_sd <- sd(S_wt_perc_all_runs)
-    Ca_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Ca.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	Ca_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Ca.wt.", colnames(Total_bootstrap_run_frame))]))
     Ca_wt_perc_mean <- mean(Ca_wt_perc_all_runs)
     Ca_wt_perc_sd <- sd(Ca_wt_perc_all_runs)
-    Fe_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Fe.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	Fe_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Fe.wt.", colnames(Total_bootstrap_run_frame))]))
     Fe_wt_perc_mean <- mean(Fe_wt_perc_all_runs)
     Fe_wt_perc_sd <- sd(Fe_wt_perc_all_runs) 	
-    O_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("O.wt.", colnames(Total_bootstrap_run_frame))]))
+    
+	O_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("O.wt.", colnames(Total_bootstrap_run_frame))]))
     O_wt_perc_mean <- mean(O_wt_perc_all_runs)
     O_wt_perc_sd <- sd(O_wt_perc_all_runs)
-    Total_body_radius_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.radius", colnames(Total_bootstrap_run_frame))]))
+    
+	Total_body_radius_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.radius", colnames(Total_bootstrap_run_frame))]))
     Total_body_radius_mean <- mean(Total_body_radius_all_runs)
     Total_body_radius_sd <- sd(Total_body_radius_all_runs)
-    Total_body_density_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.bulk.density", colnames(Total_bootstrap_run_frame))]))
+    
+	Total_body_density_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.bulk.density", colnames(Total_bootstrap_run_frame))]))
     Total_body_density_mean <- mean(Total_body_density_all_runs)
     Total_body_density_sd <- sd(Total_body_density_all_runs)
-    Total_body_mass_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.mass", colnames(Total_bootstrap_run_frame))]))
+    
+	Total_body_mass_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.mass", colnames(Total_bootstrap_run_frame))]))
     Total_body_mass_mean <- mean(Total_body_mass_all_runs)
     Total_body_mass_sd <- sd(Total_body_mass_all_runs)
-    Accretion_energy_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Energy.of.accretion", colnames(Total_bootstrap_run_frame))]))
+    
+	Accretion_energy_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Energy.of.accretion", colnames(Total_bootstrap_run_frame))]))
     Accretion_energy_mean <- mean(Accretion_energy_all_runs)
     Accretion_energy_sd <- sd(Accretion_energy_all_runs)
-    Temperature_diff_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Temperature.difference", colnames(Total_bootstrap_run_frame))]))
+    
+	Temperature_diff_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Temperature.difference", colnames(Total_bootstrap_run_frame))]))
     Temperature_diff_mean <- mean(Temperature_diff_all_runs)
     Temperature_diff_sd <- sd(Temperature_diff_all_runs)
-    #Assuming all H is in water, calculate all water available
+    
+	#Assuming all H is in water, calculate all water available
     Max_water_wt_perc_all_runs <- H_wt_perc_all_runs*(1/1.00794)*(1/2)*((1.00794*2+15.999)/1)
     Max_water_wt_perc_mean <- mean(Max_water_wt_perc_all_runs)
     Max_water_wt_perc_sd <- sd(Max_water_wt_perc_all_runs)
@@ -307,7 +322,10 @@ AccretR <- function(){
     # Free up the cores in the cluster
     stopCluster(cl)
     
-    # Return results
-    AccretR_result <<- (list("Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
-    return(AccretR_result)
+    # Set the output file and return results
+	sink("AccretR_results_summary.txt")
+    AccretR_result <<- (list("Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Number of full bodies built" = N_simulations, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
+    print(AccretR_result)
+	sink()
+	return(AccretR_result)
 }
