@@ -43,11 +43,11 @@ AccretR <- function(){
     Earth_radius_m <- 6371000
     G <- 6.67408e-11
     
-    # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998), normalized to 100 wt. %. Bulk densities from Flynn et al. (2018). Heat capacities from Ostrowski and Bryson (2019).In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
-    CI_composition <- c(2.07,3.530,9.94,0.89,10.9,5.54,0.95,18.65,47.54,1570,500)
-    CM_composition <- c(1.44,2.26,11.8,1.16,13.04,2.77,1.32,21.86,44.34,2270,500)
-    CV_composition <- c(0.29,0.55,14.74,1.73,16.18,2.27,1.9,24.22,38.13,2970,500)
-    Water_ice <- c(11.19,0,0,0,0,0,0,0,88.808,916.9,1800)
+    # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM and CV chondrites, Lodders (2010) for CI chondrites, CLay et al. (2017) for chlorine in all meteorites; all normalized to 100 wt. %. Bulk densities from Flynn et al. (2018). Heat capacities from Ostrowski and Bryson (2019).In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
+    CI_composition <- c(2.014,3.558,9.794,0.869,10.939,5.469,0.943,18.913,46.924,0.510,0.057,0.012,1570,500)
+    CM_composition <- c(1.431,2.248,11.751,1.155,12.977,2.759,1.318,21.764,44.142,0.399,0.038,0.020,2270,500)
+    CV_composition <- c(0.287,0.544,14.680,1.725,16.117,2.258,1.889,24.125,37.983,0.349,0.037,0.005,2970,500)
+    Water_ice <- c(11.19,0,0,0,0,0,0,0,88.808,0,0,0,916.9,1800)
     material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Ice",Water_ice))
     #material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition))
     
@@ -62,6 +62,9 @@ AccretR <- function(){
         Ca_mass_kg <- 0
         Fe_mass_kg <- 0
         O_mass_kg <- 0
+		Na_mass_kg <- 0
+		K_mass_kg <- 0
+		Cl_mass_kg <- 0
         total_body_mass <- 0
         N_particles <- 0
         E_accretion <- 0
@@ -80,7 +83,7 @@ AccretR <- function(){
             select_material <- sample(material_list,1)
             unlist_vector <- unlist(select_material)
             # Obtain mass of the accreting particle, in kg, by multiplying particle volume by material class density:
-            particle_mass <- (particle_volume)*(as.numeric(unlist_vector[[11]]))
+            particle_mass <- (particle_volume)*(as.numeric(unlist_vector[[14]]))
             
             # Obtain total mass of elements:
             H_mass_kg <- H_mass_kg + (particle_mass*as.numeric(unlist_vector[[2]]))
@@ -92,9 +95,12 @@ AccretR <- function(){
             Ca_mass_kg <- Ca_mass_kg + (particle_mass*as.numeric(unlist_vector[[8]]))
             Fe_mass_kg <- Fe_mass_kg + (particle_mass*as.numeric(unlist_vector[[9]]))
             O_mass_kg <- O_mass_kg + (particle_mass*as.numeric(unlist_vector[[10]]))
+			Na_mass_kg <- Na_mass_kg + (particle_mass*as.numeric(unlist_vector[[11]]))
+			K_mass_kg <- K_mass_kg + (particle_mass*as.numeric(unlist_vector[[12]]))
+			Cl_mass_kg <- Cl_mass_kg + (particle_mass*as.numeric(unlist_vector[[13]]))
             
             # Normalize composition to 100 wt. %
-            Sum_composition <- sum(H_mass_kg, C_mass_kg, Mg_mass_kg, Al_mass_kg, Si_mass_kg, S_mass_kg, Ca_mass_kg, Fe_mass_kg, O_mass_kg)
+            Sum_composition <- sum(H_mass_kg, C_mass_kg, Mg_mass_kg, Al_mass_kg, Si_mass_kg, S_mass_kg, Ca_mass_kg, Fe_mass_kg, O_mass_kg, Na_mass_kg, K_mass_kg, Cl_mass_kg)
             H_wt_perc <- 100*H_mass_kg/Sum_composition
             C_wt_perc <- 100*C_mass_kg/Sum_composition
             Mg_wt_perc <- 100*Mg_mass_kg/Sum_composition
@@ -104,9 +110,12 @@ AccretR <- function(){
             Ca_wt_perc <- 100*Ca_mass_kg/Sum_composition
             Fe_wt_perc <- 100*Fe_mass_kg/Sum_composition
             O_wt_perc <- 100*O_mass_kg/Sum_composition
+			Na_wt_perc <- 100*Na_mass_kg/Sum_composition
+			K_wt_perc <- 100*K_mass_kg/Sum_composition
+			Cl_wt_perc <- 100*Cl_mass_kg/Sum_composition
             
             # Heat capacity equation (must come BEFORE mass, radius and growth track equations)
-            particle_heat_capacity <- as.numeric(unlist_vector[[12]])
+            particle_heat_capacity <- as.numeric(unlist_vector[[15]])
             total_body_heat_capacity <- (total_body_heat_capacity*total_body_mass + particle_heat_capacity*particle_mass)/(total_body_mass + particle_mass)
             
             # Calculate total body mass and radius according to specified growth track (given in Earth radii and masses, from Sotin et al. 2007 Icarus paper, here modified to fit Europa specifically)
@@ -124,7 +133,7 @@ AccretR <- function(){
             # Exit if radius = specified radius in meters
             if (total_body_radius>=1560800) break
         }
-        return(list("H wt. %" = H_wt_perc, "C wt. %" = C_wt_perc, "Mg wt. %" = Mg_wt_perc, "Al wt. %" = Al_wt_perc, "Si wt. %" = Si_wt_perc, "S wt. %" = S_wt_perc, "Ca wt. %" = Ca_wt_perc, "Fe wt. %" = Fe_wt_perc, "O wt. %" = O_wt_perc, "body radius (m)" = total_body_radius, "body mass (kg)" = total_body_mass, "body bulk density (kg/m^3)" = total_body_bulk_density, "Energy of accretion (J/(kg*K^-1))" = E_accretion, "Temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff, "Number of particles"=N_particles))
+        return(list("H wt. %" = H_wt_perc, "C wt. %" = C_wt_perc, "Mg wt. %" = Mg_wt_perc, "Al wt. %" = Al_wt_perc, "Si wt. %" = Si_wt_perc, "S wt. %" = S_wt_perc, "Ca wt. %" = Ca_wt_perc, "Fe wt. %" = Fe_wt_perc, "O wt. %" = O_wt_perc, "Na wt. %" = Na_wt_perc, "K wt. %" = K_wt_perc, "Cl wt. %" = Cl_wt_perc, "body radius (m)" = total_body_radius, "body mass (kg)" = total_body_mass, "body bulk density (kg/m^3)" = total_body_bulk_density, "Energy of accretion (J/(kg*K^-1))" = E_accretion, "Temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff, "Number of particles"=N_particles))
     }
     
     # Number of full bodies to build for statistics. Repeat the main subroutine X times and output all results into a transposed dataframe.
@@ -162,6 +171,15 @@ AccretR <- function(){
     O_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("O.wt.", colnames(Total_bootstrap_run_frame))]))
     O_wt_perc_mean <- mean(O_wt_perc_all_runs)
     O_wt_perc_sd <- sd(O_wt_perc_all_runs)
+	Na_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Na.wt.", colnames(Total_bootstrap_run_frame))]))
+    Na_wt_perc_mean <- mean(Na_wt_perc_all_runs)
+    Na_wt_perc_sd <- sd(Na_wt_perc_all_runs)
+	K_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("K.wt.", colnames(Total_bootstrap_run_frame))]))
+    K_wt_perc_mean <- mean(K_wt_perc_all_runs)
+    K_wt_perc_sd <- sd(K_wt_perc_all_runs)
+	Cl_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Cl.wt.", colnames(Total_bootstrap_run_frame))]))
+    Cl_wt_perc_mean <- mean(Cl_wt_perc_all_runs)
+    Cl_wt_perc_sd <- sd(Cl_wt_perc_all_runs)
     Total_body_radius_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.radius", colnames(Total_bootstrap_run_frame))]))
     Total_body_radius_mean <- mean(Total_body_radius_all_runs)
     Total_body_radius_sd <- sd(Total_body_radius_all_runs)
@@ -298,16 +316,25 @@ AccretR <- function(){
     
     O_wt_perc_all_runs_frame <- ldply(O_wt_perc_all_runs, data.frame)
     O_wt_perc_all_runs_plot <<- ggplot(O_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Bulk O wt. %") + theme_bw()
+	
+	Na_wt_perc_all_runs_frame <- ldply(Na_wt_perc_all_runs, data.frame)
+    Na_wt_perc_all_runs_plot <<- ggplot(Na_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Bulk Na wt. %") + theme_bw()
+	
+	K_wt_perc_all_runs_frame <- ldply(K_wt_perc_all_runs, data.frame)
+    K_wt_perc_all_runs_plot <<- ggplot(K_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Bulk K wt. %") + theme_bw()
+	
+	Cl_wt_perc_all_runs_frame <- ldply(Cl_wt_perc_all_runs, data.frame)
+    Cl_wt_perc_all_runs_plot <<- ggplot(Cl_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab("Bulk Cl wt. %") + theme_bw()
     
     Max_water_wt_perc_all_runs_frame <- ldply(Max_water_wt_perc_all_runs, data.frame)
     Max_water_wt_perc_all_runs_plot <<- ggplot(Max_water_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=mean(X..i..)), color="red", linetype="dashed") + xlab((expression(paste("Maximal ", H[2],"O wt. %")))) + theme_bw()
     
-    AccretR_composition_result_plot <<- multiplot(H_wt_perc_all_runs_plot, C_wt_perc_all_runs_plot, Mg_wt_perc_all_runs_plot, Al_wt_perc_all_runs_plot, Si_wt_perc_all_runs_plot, S_wt_perc_all_runs_plot, Ca_wt_perc_all_runs_plot, Fe_wt_perc_all_runs_plot, O_wt_perc_all_runs_plot, Max_water_wt_perc_all_runs_plot, cols=2)
+    AccretR_composition_result_plot <<- multiplot(H_wt_perc_all_runs_plot, C_wt_perc_all_runs_plot, Mg_wt_perc_all_runs_plot, Al_wt_perc_all_runs_plot, Si_wt_perc_all_runs_plot, S_wt_perc_all_runs_plot, Ca_wt_perc_all_runs_plot, Fe_wt_perc_all_runs_plot, O_wt_perc_all_runs_plot, Na_wt_perc_all_runs_plot, K_wt_perc_all_runs_plot, Cl_wt_perc_all_runs_plot, Max_water_wt_perc_all_runs_plot, cols=3)
     
     # Free up the cores in the cluster
     stopCluster(cl)
     
     # Return results
-    AccretR_result <<- (list("Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
+    AccretR_result <<- (list("Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Mean Na wt. %" = Na_wt_perc_mean, "Standard deviation Na wt. %" = Na_wt_perc_sd, "Mean K wt. %" = K_wt_perc_mean, "Standard deviation K wt. %" = K_wt_perc_sd, "Mean Cl wt. %" = Cl_wt_perc_mean, "Standard deviation Cl wt. %" = Cl_wt_perc_sd, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
     return(AccretR_result)
 }
