@@ -43,12 +43,14 @@ AccretR <- function(){
     Earth_radius_m <- 6371000
     G <- 6.67408e-11
     
-    # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM and CV chondrites, Lodders (2010) for CI chondrites, CLay et al. (2017) for chlorine in all meteorites; all normalized to 100 wt. %. Bulk densities from Flynn et al. (2018). Heat capacities from Ostrowski and Bryson (2019).In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
+    # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM and CV chondrites, Lodders (2010) for CI chondrites, CLay et al. (2017) for chlorine in all meteorites; all normalized to 100 wt. %. Bulk densities from Flynn et al. (2018). Heat capacities from Ostrowski and Bryson (2019). Comet 67P/Churyumov-Gerasimenko composition is a synthesis of Pätzold et al. (2016), Dhooghe et al. (2017), Le Roy et al. (2015), Bardyn et al. (2017). Heat capacity of comet 67P/C-G adopted from Hu et al. (2017). Comet 67P/C-G density and dust-to-ice ratio of 4 (by mass) (included in composition) is from Pätzold et al. (2016). In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
     CI_composition <- c(2.014,3.558,9.794,0.869,10.939,5.469,0.943,18.913,46.924,0.510,0.057,0.012,1570,500)
     CM_composition <- c(1.431,2.248,11.751,1.155,12.977,2.759,1.318,21.764,44.142,0.399,0.038,0.020,2270,500)
     CV_composition <- c(0.287,0.544,14.680,1.725,16.117,2.258,1.889,24.125,37.983,0.349,0.037,0.005,2970,500)
-    Water_ice <- c(11.19,0,0,0,0,0,0,0,88.808,0,0,0,916.9,1800)
-    material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Ice",Water_ice))
+	Comet_67P <- c(11.400,27.090,0.995,0.180,10.541,1.807,0.083,6.097,41.072,0.703,0.032,0.001,533,1000)
+	#Water_ice <- c(11.19,0,0,0,0,0,0,0,88.808,0,0,0,916.9,1800)
+	material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Comet",Comet_67P))
+    #material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Ice",Water_ice))
     #material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition))
     
     AccretR_main_subroutine <- function(){    
