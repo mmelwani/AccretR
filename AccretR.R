@@ -17,7 +17,7 @@
 	# Author contact details:
 	# Mohit Melwani Daswani
 	# melwani.mohit@gmail.com
-	# Latest update: 6th June 2019.
+	# Latest update: 25th September 2019.
 
 AccretR <- function(){
     
@@ -42,14 +42,14 @@ AccretR <- function(){
     Earth_radius_m <- 6371000
     G <- 6.67408e-11
     
-    # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM, CV, CO, CK and CR chondrites, Lodders (2010) for CI chondrites, Clay et al. (2017) for chlorine in all meteorites (average CV chlorine used for CK chondrites); all normalized to 100 wt. %. Bulk densities from Flynn et al. (2018). Heat capacities apporximated from Ostrowski and Bryson (2019) at 200 K. Comet 67P/Churyumov-Gerasimenko composition is a synthesis of Pätzold et al. (2016), Dhooghe et al. (2017), Le Roy et al. (2015), Bardyn et al. (2017). Heat capacity of comet 67P/C-G adopted from Hu et al. (2017). Comet 67P/C-G density and dust-to-ice ratio of 4 (by mass) (included in composition) is from Pätzold et al. (2016). In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, N wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
+    # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM, CV, CO, CK and CR chondrites, Lodders (2010) for CI chondrites, Clay et al. (2017) for chlorine in all meteorites (average CV chlorine used for CK chondrites); all normalized to 100 wt. %. H was not reported in Lodders and Fegley (1998) for CK and CR chondrites, so taken from CV chondrites for CK chondrites. For CR chondrites, H is estimated from DTA/DTG for 10 CR chondrites in Garenne et al (2014), where  mass lost between 200 - 400 C is assumed to be H2O from oxyhydroxides and mass lost from 400 - 770 is OH- from phyllosilicates. Bulk densities from Flynn et al. (2018). Heat capacities approximated from Ostrowski and Bryson (2019) at 200 K. Comet 67P/Churyumov-Gerasimenko composition is a synthesis of Pätzold et al. (2016), Dhooghe et al. (2017), Le Roy et al. (2015), Bardyn et al. (2017). Heat capacity of comet 67P/C-G adopted from Hu et al. (2017). Comet 67P/C-G density and dust-to-ice ratio of 4 (by mass) (already taken into account in composition) is from Pätzold et al. (2016). In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, N wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
     CI_composition <- c(2.008,3.547,9.764,0.866,10.906,5.453,0.940,18.856,46.783,0.509,0.056,0.012,0.301,1570,500)
     CM_composition <- c(1.428,2.244,11.733,1.153,12.957,2.755,1.316,21.731,44.073,0.398,0.038,0.019,0.155,2270,500)
     CV_composition <- c(0.287,0.544,14.679,1.725,16.116,2.258,1.889,24.123,37.980,0.349,0.037,0.005,0.008,2970,500)
-	Comet_67P <- c(11.283,26.814,0.985,0.178,10.419,1.789,0.082,6.035,40.652,0.696,0.031,0.001,1.021,533,1000)
+	Comet_67P <- c(11.283,26.814,0.985,0.178,10.434,1.789,0.082,6.035,40.652,0.696,0.031,0.001,1.021,533,1000)
 	CO_composition <- c(0.071,0.447,14.727,1.422,16.047,2.234,1.605,25.391,37.578,0.427,0.037,0.006,0.009,3100,500)
-	CK_composition <- c(0,0.224,14.985,1.498,16.106,1.733,1.733,23.446,39.924,0.316,0.030,0.005,0,2900,500)
-	CR_composition <- c(0,2.038,13.961,1.172,15.286,1.936,1.315,24.254,39.662,0.336,0.032,0.007,0,3110,500)
+	CK_composition <- c(0.285,0.224,14.942,1.494,16.047,1.728,1.728,23.379,39.802,0.315,0.029,0.005,0.008,2900,500)
+	CR_composition <- c(0.319,2.038,13.961,1.172,15.286,1.936,1.315,24.254,39.280,0.336,0.032,0.007,0.063,3110,500)
 	# Water_ice <- c(11.19,0,0,0,0,0,0,0,88.808,0,0,0,916.9,1800)
 	material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Comet",Comet_67P), list("CO", CO_composition), list("CK", CK_composition), list("CR", CR_composition))
 
@@ -78,7 +78,11 @@ AccretR <- function(){
         
         repeat{
             # Radius of the accreting particles, in m. Here, it is a random uniform distribution proportional to the total body radius (a type of runaway growth).
-            particle_radius <- runif(1,0.1*total_body_radius,0.5*total_body_radius)
+            # particle_radius <- runif(1,0.1*total_body_radius,0.5*total_body_radius)
+			# In this case, the particle radius is 1 to 1000 m as in the characteristic impactor size that assembled the Galilean satellites in Barr and Canup (2008), reported in Canup and Ward (2009). Barr and Canup (2008) actually calculate different particle sizes for Ganymede (6 - 30 m) and Callisto (800 - 4000 m), based on Callisto not melting while accreting. Also, particle size is proportional to 1/total body radius^2 in their models, so particle sizes become increasingly small as the satellites reach their final sizes. Also, 
+			# particle_radius <- runif(1,1,1000)
+			# In this case, particles are pebbles 0.005 to 0.5 m in radius, consistent with the Ronnet et al. (2017; ApJ) scenario where Europa was built from mostly dehydrated material (0 - 50 % water)inside of the circumjovian snow line.
+			 particle_radius <- runif(1,0.005,0.5)
             # Volume of the accreting particle, in m^3.
             particle_volume <- 4/3*pi*(particle_radius^3)
             
