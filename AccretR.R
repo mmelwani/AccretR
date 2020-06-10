@@ -1,5 +1,5 @@
 # AccretR, a program to calculate the composition of an icy ocean world using the building blocks of our solar system.
-# Copyright (C) 2019 Mohit Melwani Daswani
+# Copyright (C) 2020 Mohit Melwani Daswani
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 # Author contact details:
 # Mohit Melwani Daswani
 # melwani.mohit@gmail.com
-# Latest update: 2nd October 2019.
+# Latest update: 10th June 2020.
 
 AccretR <- function(){
   
@@ -33,16 +33,16 @@ AccretR <- function(){
   # Start the timer
   time_stamp <- proc.time()
   
-  # Input number of workers/cores to be used. Function detectCores gives the total number of cores available on your system. Change if you will need fewer cores (a good idea if you are running other tasks, and AccretR is using too much memory). 
+  # Input number of workers/cores to be used. Function detectCores gives the total number of cores available on your system. Change if you will need fewer cores (a good idea if you are running other tasks, and AccretR is using too much memory) Example: cl <- makeCluster(3) will use 3 cores. cl <- makeCluster(detectCores()-1) will use all the cores available on your system, minus one.
   cl <- makeCluster(detectCores()-1)
   registerDoParallel(cl)
   
-  # Invariant values
+  # Invariant values or constants:
   Earth_mass_kg <- 5.972e+24
   Earth_radius_m <- 6371000
   G <- 6.67408e-11
   
-  # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM, CV, CO, CK and CR chondrites, Palme et al. (2014) for CI chondrites, Clay et al. (2017) for chlorine in all meteorites (average CV chlorine used for CK chondrites); all normalized to 100 wt. %. H was not reported in Lodders and Fegley (1998) for CK and CR chondrites, so taken from CV chondrites for CK chondrites. For CR chondrites, H is estimated from DTA/DTG for 10 CR chondrites in Garenne et al (2014), where  mass lost between 200 - 400 C is assumed to be H2O from oxyhydroxides and mass lost from 400 - 770 is OH- from phyllosilicates. Bulk densities from Flynn et al. (2018). Heat capacities approximated from Ostrowski and Bryson (2019) at 200 K. Comet 67P/Churyumov-Gerasimenko composition is a synthesis of Pätzold et al. (2016), Dhooghe et al. (2017), Le Roy et al. (2015), Bardyn et al. (2017). Heat capacity of comet 67P/C-G adopted from Hu et al. (2017). Comet 67P/C-G density and dust-to-ice ratio of 4 (by mass) (already taken into account in composition) is from Pätzold et al. (2016). In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, N wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks you want to leave out.
+  # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM, CV, CO, CK and CR chondrites, Palme et al. (2014) for CI chondrites, Clay et al. (2017) for chlorine in all meteorites (average CV chlorine used for CK chondrites); all normalized to 100 wt. %. H was not reported in Lodders and Fegley (1998) for CK and CR chondrites, so taken from CV chondrites for CK chondrites. For CR chondrites, H is estimated from DTA/DTG for 10 CR chondrites in Garenne et al (2014), where  mass lost between 200 - 400 C is assumed to be H2O from oxyhydroxides and mass lost from 400 - 770 is OH- from phyllosilicates. Bulk densities from Flynn et al. (2018). Heat capacities approximated from Ostrowski and Bryson (2019) at 200 K. Comet 67P/Churyumov-Gerasimenko composition is a synthesis of Pätzold et al. (2016), Dhooghe et al. (2017), Le Roy et al. (2015), Bardyn et al. (2017). Heat capacity of comet 67P/C-G adopted from Hu et al. (2017). Comet 67P/C-G density and dust-to-ice ratio of 4 (by mass) (already taken into account in composition) is from Pätzold et al. (2016). In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, N wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks (compositions) you want to leave out.
   CI_composition <- c(2.006,3.543,9.714,0.855,10.895,5.448,0.928,19.000,46.737,0.505,0.057,0.012,0.300,1570,500)
   CM_composition <- c(1.428,2.244,11.733,1.153,12.957,2.755,1.316,21.731,44.073,0.398,0.038,0.019,0.155,2270,500)
   CV_composition <- c(0.287,0.544,14.679,1.725,16.116,2.258,1.889,24.123,37.980,0.349,0.037,0.005,0.008,2970,500)
@@ -51,7 +51,10 @@ AccretR <- function(){
   CK_composition <- c(0.285,0.224,14.942,1.494,16.060,1.728,1.728,23.379,39.802,0.315,0.029,0.005,0.008,2900,500)
   CR_composition <- c(0.319,2.038,13.961,1.172,15.286,1.936,1.315,24.254,39.280,0.336,0.032,0.007,0.063,3110,500)
   # Water_ice <- c(11.19,0,0,0,0,0,0,0,88.808,0,0,0,916.9,1800)
+  
+  #The following material list should coincide with the selected materials in the prior block. Modify as necessary.
   material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Comet",Comet_67P), list("CO", CO_composition), list("CK", CK_composition), list("CR", CR_composition))
+  # material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("Comet",Comet_67P))
   
   AccretR_main_subroutine <- function(){    
     # Initial system values
@@ -77,27 +80,34 @@ AccretR <- function(){
     Temperature_diff <- 0
     
     repeat{
-      # Radius of the accreting particles, in m. Comment out all but the relevant one.
+      # Radius of the accreting particles, in meters. Comment out all but the relevant one.
       
-      # Here, it is a random uniform distribution proportional to the total body radius (a type of runaway growth). [Quickest to run.]
+      # Type A: Here, it is a random uniform distribution proportional to the total body radius (a type of runaway growth). [Quickest to run.]
        particle_radius <- runif(1,0.1*total_body_radius,0.5*total_body_radius)
       
-      # In this case, the particle radius is 1 to 1000 m as in the characteristic impactor size that assembled the Galilean satellites in Barr and Canup (2008), reported in Canup and Ward (2009). Barr and Canup (2008) actually calculate different particle sizes for Ganymede (6 - 30 m) and Callisto (800 - 4000 m), based on Callisto not melting while accreting. Also, particle size is proportional to 1/total body radius^2 in their models, so particle sizes become increasingly small as the satellites reach their final sizes (orderly growth). [Slow to run.]
+      # Type B: In this case, the particle radius is 1 to 1000 m as in the characteristic impactor size that assembled the Galilean satellites in Barr and Canup (2008), reported in Canup and Ward (2009). Barr and Canup (2008) actually calculate different particle sizes for Ganymede (6 - 30 m) and Callisto (800 - 4000 m), based on Callisto not melting while accreting. Also, particle size is proportional to 1/total body radius^2 in their models, so particle sizes become increasingly small as the satellites reach their final sizes (orderly growth). [Slow to run.]
       # particle_radius <- runif(1,1,1000)
       
-      # In this case, particles are pebbles 0.005 to 0.5 m in radius, consistent with the Ronnet et al. (2017; ApJ) scenario where Europa was built from mostly dehydrated material (0 - 50 % water) of otherwise solar composition, inside of the circumjovian snow line; i.e., Europa accreted with approximately its current bulk composition. [Very slow to run!]
+      # Type C: In this case, particles are pebbles 0.005 to 0.5 m in radius, consistent with the Ronnet et al. (2017; ApJ) scenario where Europa was built from mostly dehydrated material (0 - 50 % water) of otherwise solar composition, inside of the circumjovian snow line; i.e., Europa accreted with approximately its current bulk composition. [Very slow to run, best carried out on a HPC.]
       # particle_radius <- runif(1,0.005,0.5)
       
       # Volume of the accreting particle, in m^3.
       particle_volume <- 4/3*pi*(particle_radius^3)
       
+	  #########################################
+	  
       # Select material class based on specified probability. Normalization of the probabilities to 1 is done automatically by the "sample" function. Comment out all but the relevant one.
       
-      # Random selection with equal probability for all materials:
+      # Type A: Random selection with equal probability for all materials:
       # select_material <- sample(material_list,1,replace=T)
-      # Europa selection probabilities (based on distance to Jupiter's formation at 3 AU, Desch et al., 2018 ApJ):
+      # Type B: Europa selection probabilities for all carbonaceous chondrites plus comet 67P (based on distance to Jupiter's formation at 3 AU, Desch et al., 2018 ApJ):
       select_material <- sample(material_list,1,replace=T,prob=c(6.94e-3,1.73,2.78,sample(6.94e-3:1.37e-3,1,replace=T),1.93,2.78,1.42))
-      unlist_vector <- unlist(select_material)
+	  # Type C: Europa selection probabilities for all CI and CM carbonaceous chondrites plus comet 67P (based on distance to Jupiter's formation at 3 AU, Desch et al., 2018 ApJ):
+	  #select_material <- sample(material_list,1,replace=T,prob=c(6.94e-3,1.73,sample(6.94e-3:1.37e-3,1,replace=T)))
+      
+	  unlist_vector <- unlist(select_material)
+	  
+	  #########################################
       
       # Obtain mass of the accreting particle, in kg, by multiplying particle volume by material class density:
       particle_mass <- (particle_volume)*(as.numeric(unlist_vector[[15]]))
@@ -133,11 +143,13 @@ AccretR <- function(){
       Cl_wt_perc <- 100*Cl_mass_kg/Sum_composition
       N_wt_perc <- 100*N_mass_kg/Sum_composition
       
+	  #########################################
+	  
       # Heat capacity equation (must come BEFORE mass, radius and growth track equations)
       particle_heat_capacity <- as.numeric(unlist_vector[[16]])
       total_body_heat_capacity <- (total_body_heat_capacity*total_body_mass + particle_heat_capacity*particle_mass)/(total_body_mass + particle_mass)
       
-      # Calculate total body mass and radius according to specified growth track (given in Earth radii and masses, from Sotin et al. 2007 Icarus paper, here modified to fit Europa OR Titan specifically. Comment out one body or the other)
+      # Calculate total body mass and radius according to specified growth track (given in Earth radii and masses, from Sotin et al. 2007 (Icarus), here modified to fit Europa OR Titan OR Enceladus specifically. Comment out one body or the other)
       total_body_mass <- total_body_mass + particle_mass
       # Europa growth track:
       total_body_radius <- ((1.072*(total_body_mass/Earth_mass_kg)^0.306)*Earth_radius_m)
@@ -167,70 +179,90 @@ AccretR <- function(){
   }
   
   # Number of full bodies to build for statistics. Repeat the main subroutine X times and output all results into a transposed dataframe.
-  Total_bootstrap_run <- foreach(i=1:1) %dopar% {AccretR_main_subroutine()}
+  Total_bootstrap_run <- foreach(i=1:10000) %dopar% {AccretR_main_subroutine()}
   Total_bootstrap_run_frame <- as.data.frame((Total_bootstrap_run))
   
   # Output medians and standard deviations of the data gathered in the data frame
   N_particles_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Number.of.particles", colnames(Total_bootstrap_run_frame))]))
   N_particles_median <- median(N_particles_all_runs)
+  N_particles_mean <- mean(N_particles_all_runs)
   N_particles_sd <- sd(N_particles_all_runs)
   H_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("H.wt.", colnames(Total_bootstrap_run_frame))]))
   H_wt_perc_median <- median(H_wt_perc_all_runs)
+  H_wt_perc_mean <- mean(H_wt_perc_all_runs)
   H_wt_perc_sd <- sd(H_wt_perc_all_runs) 	
   C_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("C.wt.", colnames(Total_bootstrap_run_frame))]))
   C_wt_perc_median <- median(C_wt_perc_all_runs)
+  C_wt_perc_mean <- mean(C_wt_perc_all_runs)
   C_wt_perc_sd <- sd(C_wt_perc_all_runs) 	
   Mg_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Mg.wt.", colnames(Total_bootstrap_run_frame))]))
   Mg_wt_perc_median <- median(Mg_wt_perc_all_runs)
+  Mg_wt_perc_mean <- mean(Mg_wt_perc_all_runs)
   Mg_wt_perc_sd <- sd(Mg_wt_perc_all_runs) 	
   Al_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Al.wt.", colnames(Total_bootstrap_run_frame))]))
   Al_wt_perc_median <- median(Al_wt_perc_all_runs)
+  Al_wt_perc_mean <- mean(Al_wt_perc_all_runs)
   Al_wt_perc_sd <- sd(Al_wt_perc_all_runs) 	
   Si_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Si.wt.", colnames(Total_bootstrap_run_frame))]))
   Si_wt_perc_median <- median(Si_wt_perc_all_runs)
+  Si_wt_perc_mean <- mean(Si_wt_perc_all_runs)
   Si_wt_perc_sd <- sd(Si_wt_perc_all_runs) 	
   S_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("S.wt.", colnames(Total_bootstrap_run_frame))]))
   S_wt_perc_median <- median(S_wt_perc_all_runs)
+  S_wt_perc_mean <- mean(S_wt_perc_all_runs)
   S_wt_perc_sd <- sd(S_wt_perc_all_runs)
   Ca_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Ca.wt.", colnames(Total_bootstrap_run_frame))]))
   Ca_wt_perc_median <- median(Ca_wt_perc_all_runs)
+  Ca_wt_perc_mean <- mean(Ca_wt_perc_all_runs)
   Ca_wt_perc_sd <- sd(Ca_wt_perc_all_runs)
   Fe_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Fe.wt.", colnames(Total_bootstrap_run_frame))]))
   Fe_wt_perc_median <- median(Fe_wt_perc_all_runs)
+  Fe_wt_perc_mean <- mean(Fe_wt_perc_all_runs)
   Fe_wt_perc_sd <- sd(Fe_wt_perc_all_runs) 	
   O_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("O.wt.", colnames(Total_bootstrap_run_frame))]))
   O_wt_perc_median <- median(O_wt_perc_all_runs)
+  O_wt_perc_mean <- mean(O_wt_perc_all_runs)
   O_wt_perc_sd <- sd(O_wt_perc_all_runs)
   Na_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Na.wt.", colnames(Total_bootstrap_run_frame))]))
   Na_wt_perc_median <- median(Na_wt_perc_all_runs)
+  Na_wt_perc_mean <- mean(Na_wt_perc_all_runs)
   Na_wt_perc_sd <- sd(Na_wt_perc_all_runs)
   K_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("K.wt.", colnames(Total_bootstrap_run_frame))]))
   K_wt_perc_median <- median(K_wt_perc_all_runs)
+  K_wt_perc_mean <- mean(K_wt_perc_all_runs)
   K_wt_perc_sd <- sd(K_wt_perc_all_runs)
   Cl_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Cl.wt.", colnames(Total_bootstrap_run_frame))]))
   Cl_wt_perc_median <- median(Cl_wt_perc_all_runs)
+  Cl_wt_perc_mean <- mean(Cl_wt_perc_all_runs)
   Cl_wt_perc_sd <- sd(Cl_wt_perc_all_runs)
   N_wt_perc_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("N.wt.", colnames(Total_bootstrap_run_frame))]))
   N_wt_perc_median <- median(N_wt_perc_all_runs)
+  N_wt_perc_mean <- mean(N_wt_perc_all_runs)
   N_wt_perc_sd <- sd(N_wt_perc_all_runs)
   Total_body_radius_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.radius", colnames(Total_bootstrap_run_frame))]))
   Total_body_radius_median <- median(Total_body_radius_all_runs)
+  Total_body_radius_mean <- mean(Total_body_radius_all_runs)
   Total_body_radius_sd <- sd(Total_body_radius_all_runs)
   Total_body_density_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.bulk.density", colnames(Total_bootstrap_run_frame))]))
   Total_body_density_median <- median(Total_body_density_all_runs)
+  Total_body_density_mean <- mean(Total_body_density_all_runs)
   Total_body_density_sd <- sd(Total_body_density_all_runs)
   Total_body_mass_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("body.mass", colnames(Total_bootstrap_run_frame))]))
   Total_body_mass_median <- median(Total_body_mass_all_runs)
+  Total_body_mass_mean <- mean(Total_body_mass_all_runs)
   Total_body_mass_sd <- sd(Total_body_mass_all_runs)
   Accretion_energy_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Energy.of.accretion", colnames(Total_bootstrap_run_frame))]))
   Accretion_energy_median <- median(Accretion_energy_all_runs)
+  Accretion_energy_mean <- mean(Accretion_energy_all_runs)
   Accretion_energy_sd <- sd(Accretion_energy_all_runs)
   Temperature_diff_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Temperature.difference", colnames(Total_bootstrap_run_frame))]))
   Temperature_diff_median <- median(Temperature_diff_all_runs)
+  Temperature_diff_mean <- mean(Temperature_diff_all_runs)
   Temperature_diff_sd <- sd(Temperature_diff_all_runs)
   #Assuming all H is in water, calculate all water available
   Max_water_wt_perc_all_runs <- H_wt_perc_all_runs*(1/1.00794)*(1/2)*((1.00794*2+15.999)/1)
   Max_water_wt_perc_median <- median(Max_water_wt_perc_all_runs)
+  Max_water_wt_perc_mean <- mean(Max_water_wt_perc_all_runs)
   Max_water_wt_perc_sd <- sd(Max_water_wt_perc_all_runs)
   
   # Output the type of parallelization used, and the number of workers
@@ -304,79 +336,146 @@ AccretR <- function(){
   
   # AccretR histogram plots sensu strictu
   N_particles_all_runs_frame <- ldply(N_particles_all_runs, data.frame)
-  N_particles_all_runs_plot <<- ggplot(N_particles_all_runs_frame, aes(x=X..i..)) + geom_histogram() + geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Number of accreting planetesimals") + theme_bw()
+  N_particles_all_runs_plot <<- ggplot(N_particles_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() + 
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + xlab("Number of accreting planetesimals") + theme_bw()
   
   Total_body_radius_all_runs_frame <- ldply(Total_body_radius_all_runs, data.frame)
-  Total_body_radius_all_runs_plot <<- ggplot(Total_body_radius_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Total body radius (m)") + theme_bw()
+  Total_body_radius_all_runs_plot <<- ggplot(Total_body_radius_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + xlab("Total body radius (m)") + theme_bw()
   
   Total_body_mass_all_runs_frame <- ldply(Total_body_mass_all_runs, data.frame)
-  Total_body_mass_all_runs_plot <<- ggplot(Total_body_mass_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Total body mass (kg)") + theme_bw()
+  Total_body_mass_all_runs_plot <<- ggplot(Total_body_mass_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() + 
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + xlab("Total body mass (kg)") + theme_bw()
   
   Total_body_density_all_runs_frame <- ldply(Total_body_density_all_runs, data.frame)
-  Total_body_density_all_runs_plot <<- ggplot(Total_body_density_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab((expression(paste("Bulk body densities (",kg/m^3,")")))) + theme_bw()
+  Total_body_density_all_runs_plot <<- ggplot(Total_body_density_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab((expression(paste("Bulk body densities (",kg/m^3,")")))) + theme_bw()
   
   Accretion_energy_all_runs_frame <- ldply(Accretion_energy_all_runs, data.frame)
-  Accretion_energy_all_runs_plot <<- ggplot(Accretion_energy_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Accretion energies (J)") + theme_bw()
+  Accretion_energy_all_runs_plot <<- ggplot(Accretion_energy_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + xlab("Accretion energies (J)") + theme_bw()
   
   Temperature_diff_all_runs_frame <- ldply(Temperature_diff_all_runs, data.frame)
-  Temperature_diff_all_runs_plot <<- ggplot(Temperature_diff_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + scale_x_continuous(labels = scientific) + xlab("Temperature difference between body surface and accretion disk (K)") + theme_bw()
+  Temperature_diff_all_runs_plot <<- ggplot(Temperature_diff_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + xlab("Temperature difference between body surface and accretion disk (K)") + theme_bw()
   
   AccretR_body_result_plot <<- multiplot(N_particles_all_runs_plot, Total_body_radius_all_runs_plot, Total_body_mass_all_runs_plot, Total_body_density_all_runs_plot, Accretion_energy_all_runs_plot, Temperature_diff_all_runs_plot, cols=2)
   
   H_wt_perc_all_runs_frame <- ldply(H_wt_perc_all_runs, data.frame)
-  H_wt_perc_all_runs_plot <<- ggplot(H_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk H wt. %") + theme_bw()
+  H_wt_perc_all_runs_plot <<- ggplot(H_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk H wt. %") + theme_bw()
   
   C_wt_perc_all_runs_frame <- ldply(C_wt_perc_all_runs, data.frame)
-  C_wt_perc_all_runs_plot <<- ggplot(C_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk C wt. %") + theme_bw()
+  C_wt_perc_all_runs_plot <<- ggplot(C_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk C wt. %") + theme_bw()
   
   Mg_wt_perc_all_runs_frame <- ldply(Mg_wt_perc_all_runs, data.frame)
-  Mg_wt_perc_all_runs_plot <<- ggplot(Mg_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk Mg wt. %") + theme_bw()
+  Mg_wt_perc_all_runs_plot <<- ggplot(Mg_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk Mg wt. %") + theme_bw()
   
   Al_wt_perc_all_runs_frame <- ldply(Al_wt_perc_all_runs, data.frame)
-  Al_wt_perc_all_runs_plot <<- ggplot(Al_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk Al wt. %") + theme_bw()
+  Al_wt_perc_all_runs_plot <<- ggplot(Al_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk Al wt. %") + theme_bw()
   
   Si_wt_perc_all_runs_frame <- ldply(Si_wt_perc_all_runs, data.frame)
-  Si_wt_perc_all_runs_plot <<- ggplot(Si_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk Si wt. %") + theme_bw()
+  Si_wt_perc_all_runs_plot <<- ggplot(Si_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk Si wt. %") + theme_bw()
   
   S_wt_perc_all_runs_frame <- ldply(S_wt_perc_all_runs, data.frame)
-  S_wt_perc_all_runs_plot <<- ggplot(S_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk S wt. %") + theme_bw()
+  S_wt_perc_all_runs_plot <<- ggplot(S_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk S wt. %") + theme_bw()
   
   Ca_wt_perc_all_runs_frame <- ldply(Ca_wt_perc_all_runs, data.frame)
-  Ca_wt_perc_all_runs_plot <<- ggplot(Ca_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk Ca wt. %") + theme_bw()
+  Ca_wt_perc_all_runs_plot <<- ggplot(Ca_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk Ca wt. %") + theme_bw()
   
   Fe_wt_perc_all_runs_frame <- ldply(Fe_wt_perc_all_runs, data.frame)
-  Fe_wt_perc_all_runs_plot <<- ggplot(Fe_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk Fe wt. %") + theme_bw()
+  Fe_wt_perc_all_runs_plot <<- ggplot(Fe_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk Fe wt. %") + theme_bw()
   
   O_wt_perc_all_runs_frame <- ldply(O_wt_perc_all_runs, data.frame)
-  O_wt_perc_all_runs_plot <<- ggplot(O_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk O wt. %") + theme_bw()
+  O_wt_perc_all_runs_plot <<- ggplot(O_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk O wt. %") + theme_bw()
   
   Na_wt_perc_all_runs_frame <- ldply(Na_wt_perc_all_runs, data.frame)
-  Na_wt_perc_all_runs_plot <<- ggplot(Na_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk Na wt. %") + theme_bw()
+  Na_wt_perc_all_runs_plot <<- ggplot(Na_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk Na wt. %") + theme_bw()
   
   K_wt_perc_all_runs_frame <- ldply(K_wt_perc_all_runs, data.frame)
-  K_wt_perc_all_runs_plot <<- ggplot(K_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk K wt. %") + theme_bw()
+  K_wt_perc_all_runs_plot <<- ggplot(K_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk K wt. %") + theme_bw()
   
   Cl_wt_perc_all_runs_frame <- ldply(Cl_wt_perc_all_runs, data.frame)
-  Cl_wt_perc_all_runs_plot <<- ggplot(Cl_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk Cl wt. %") + theme_bw()
+  Cl_wt_perc_all_runs_plot <<- ggplot(Cl_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk Cl wt. %") + theme_bw()
   
   N_wt_perc_all_runs_frame <- ldply(N_wt_perc_all_runs, data.frame)
-  N_wt_perc_all_runs_plot <<- ggplot(N_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab("Bulk N wt. %") + theme_bw()
+  N_wt_perc_all_runs_plot <<- ggplot(N_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab("Bulk N wt. %") + theme_bw()
   
   Max_water_wt_perc_all_runs_frame <- ldply(Max_water_wt_perc_all_runs, data.frame)
-  Max_water_wt_perc_all_runs_plot <<- ggplot(Max_water_wt_perc_all_runs_frame, aes(x=X..i..)) + geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + xlab((expression(paste("Maximal ", H[2],"O wt. %")))) + theme_bw()
+  Max_water_wt_perc_all_runs_plot <<- ggplot(Max_water_wt_perc_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    xlab((expression(paste("Maximal ", H[2],"O wt. %")))) + theme_bw()
   
   AccretR_composition_result_plot <<- multiplot(H_wt_perc_all_runs_plot, C_wt_perc_all_runs_plot, Mg_wt_perc_all_runs_plot, Al_wt_perc_all_runs_plot, Si_wt_perc_all_runs_plot, S_wt_perc_all_runs_plot, Ca_wt_perc_all_runs_plot, Fe_wt_perc_all_runs_plot, O_wt_perc_all_runs_plot, Na_wt_perc_all_runs_plot, K_wt_perc_all_runs_plot, Cl_wt_perc_all_runs_plot, N_wt_perc_all_runs_plot,Max_water_wt_perc_all_runs_plot, cols=3)
   
   # Free up the cores in the cluster
   stopCluster(cl)
   
-  # Set the output file, if wanted
-  sink("AccretR_output.txt")
+  # Set the output file, if wanted. Modify the file name to whatever name you like:
+  #sink("AccretR_output_Europa_MC-Scale.txt")
   
   # Return results
-  AccretR_result <<- (list("Median H wt. %" = H_wt_perc_median, "Standard deviation H wt. %" = H_wt_perc_sd, "Median C wt. %" = C_wt_perc_median, "Standard deviation C wt. %" = C_wt_perc_sd, "Median Mg wt. %" = Mg_wt_perc_median, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Median Al wt. %" = Al_wt_perc_median, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Median Si wt. %" = Si_wt_perc_median, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Median S wt. %" = S_wt_perc_median, "Standard deviation S wt. %" = S_wt_perc_sd, "Median Ca wt. %" = Ca_wt_perc_median, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Median Fe wt. %" = Fe_wt_perc_median, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Median O wt. %" = O_wt_perc_median, "Standard deviation O wt. %" = O_wt_perc_sd, "Median Na wt. %" = Na_wt_perc_median, "Standard deviation Na wt. %" = Na_wt_perc_sd, "Median K wt. %" = K_wt_perc_median, "Standard deviation K wt. %" = K_wt_perc_sd, "Median Cl wt. %" = Cl_wt_perc_median, "Standard deviation Cl wt. %" = Cl_wt_perc_sd, "Median N wt. %" = N_wt_perc_median, "Standard deviation N wt. %" = N_wt_perc_sd, "Median maximum H2O wt. %" = Max_water_wt_perc_median, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Median number of particles" = N_particles_median, "Standard deviation number of particles" = N_particles_sd, "Median total body radius (m)" = Total_body_radius_median, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Median total body mass (kg)" = Total_body_mass_median, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Median body bulk density" = Total_body_density_median, "Standard deviation body bulk density" = Total_body_density_sd, "Median accretion energy (J)" = Accretion_energy_median, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Median temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_median, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
+  AccretR_result <<- (list("Median H wt. %" = H_wt_perc_median, "Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Median C wt. %" = C_wt_perc_median, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Median Mg wt. %" = Mg_wt_perc_median, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Median Al wt. %" = Al_wt_perc_median, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Median Si wt. %" = Si_wt_perc_median, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Median S wt. %" = S_wt_perc_median, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Median Ca wt. %" = Ca_wt_perc_median, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Median Fe wt. %" = Fe_wt_perc_median, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Median O wt. %" = O_wt_perc_median, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Median Na wt. %" = Na_wt_perc_median, "Mean Na wt. %" = Na_wt_perc_mean, "Standard deviation Na wt. %" = Na_wt_perc_sd, "Median K wt. %" = K_wt_perc_median, "Mean K wt. %" = K_wt_perc_mean, "Standard deviation K wt. %" = K_wt_perc_sd, "Median Cl wt. %" = Cl_wt_perc_median, "Mean Cl wt. %" = Cl_wt_perc_mean, "Standard deviation Cl wt. %" = Cl_wt_perc_sd, "Median N wt. %" = N_wt_perc_median, "Mean N wt. %" = N_wt_perc_mean, "Standard deviation N wt. %" = N_wt_perc_sd, "Median maximum H2O wt. %" = Max_water_wt_perc_median, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Median number of particles" = N_particles_median, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Median total body radius (m)" = Total_body_radius_median, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Median total body mass (kg)" = Total_body_mass_median, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Median body bulk density" = Total_body_density_median, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Median accretion energy (J)" = Accretion_energy_median, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Median temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_median, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
   return(AccretR_result)
   
   # Free up the print out sink, if the output file has been specified above. 
-  sink()
+  #sink()
 }
