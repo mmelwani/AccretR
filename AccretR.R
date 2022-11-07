@@ -1,5 +1,5 @@
 # AccretR, a program to calculate the composition of an icy ocean world using the building blocks of our solar system.
-# Copyright (C) 2020 Mohit Melwani Daswani
+# Copyright (C) 2022 Mohit Melwani Daswani
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 # Author contact details:
 # Mohit Melwani Daswani
 # melwani.mohit@gmail.com
-# Latest update: 10th June 2020.
+# Latest update: 31st October 2022.
 
 AccretR <- function(){
   
@@ -39,23 +39,30 @@ AccretR <- function(){
   
   # Invariant values or constants:
   Earth_mass_kg <- 5.972e+24
-  Earth_radius_m <- 6371000
+  Earth_radius_m <- 6371e+3
   G <- 6.67408e-11
+  H2O_LHV <- 2260e+3 # J/kg Latent heat of vaporization of water (Datt et al., 2014)
+  H2O_LHF <- 334e+3 # J/kg Latent heat of fusion of water (Datt et al., 2014)
+  H2O_LHS <- 2838e+3 # J/kg Latent heat of sublimation of water (Datt et al., 2014)
+  H2O_Cp <- 4184 # J/Kg/K Specific heat capacity of water
   
   # Compositions of the building materials in weight percent. Compositions from Lodders and Fegley (1998) for CM, CV, CO, CK and CR chondrites, Palme et al. (2014) for CI chondrites, Clay et al. (2017) for chlorine in all meteorites (average CV chlorine used for CK chondrites); all normalized to 100 wt. %. H was not reported in Lodders and Fegley (1998) for CK and CR chondrites, so taken from CV chondrites for CK chondrites. For CR chondrites, H is estimated from DTA/DTG for 10 CR chondrites in Garenne et al (2014), where  mass lost between 200 - 400 C is assumed to be H2O from oxyhydroxides and mass lost from 400 - 770 is OH- from phyllosilicates. Bulk densities from Flynn et al. (2018). Heat capacities approximated from Ostrowski and Bryson (2019) at 200 K. Comet 67P/Churyumov-Gerasimenko composition is a synthesis of Pätzold et al. (2016), Dhooghe et al. (2017), Le Roy et al. (2015), Bardyn et al. (2017). Heat capacity of comet 67P/C-G adopted from Hu et al. (2017). Comet 67P/C-G density and dust-to-ice ratio of 4 (by mass) (already taken into account in composition) is from Pätzold et al. (2016). In parentheses: (H wt. %, C wt. %, Mg wt. %, Al wt. %, Si wt. %, S wt. %, Ca wt. %, Fe wt. %, O wt. %, Na wt. %, K wt. %, Cl wt. %, N wt. %, density in kg/m3, heat capacity in J/(kg*K^-1)). Comment out the building blocks (compositions) you want to leave out.
   CI_composition <- c(2.006,3.543,9.714,0.855,10.895,5.448,0.928,19.000,46.737,0.505,0.057,0.012,0.300,1570,500)
-  CM_composition <- c(1.428,2.244,11.733,1.153,12.957,2.755,1.316,21.731,44.073,0.398,0.038,0.019,0.155,2270,500)
-  CV_composition <- c(0.287,0.544,14.679,1.725,16.116,2.258,1.889,24.123,37.980,0.349,0.037,0.005,0.008,2970,500)
-  Comet_67P <- c(11.283,26.814,0.985,0.178,10.434,1.789,0.082,6.035,40.652,0.696,0.031,0.001,1.021,533,1000)
-  CO_composition <- c(0.071,0.447,14.727,1.422,16.047,2.234,1.605,25.391,37.578,0.427,0.037,0.006,0.009,3100,500)
-  CK_composition <- c(0.285,0.224,14.942,1.494,16.060,1.728,1.728,23.379,39.802,0.315,0.029,0.005,0.008,2900,500)
-  CR_composition <- c(0.319,2.038,13.961,1.172,15.286,1.936,1.315,24.254,39.280,0.336,0.032,0.007,0.063,3110,500)
-  # Water_ice <- c(11.19,0,0,0,0,0,0,0,88.808,0,0,0,916.9,1800)
+  #CM_composition <- c(1.428,2.244,11.733,1.153,12.957,2.755,1.316,21.731,44.073,0.398,0.038,0.019,0.155,2270,500)
+  #CV_composition <- c(0.287,0.544,14.679,1.725,16.116,2.258,1.889,24.123,37.980,0.349,0.037,0.005,0.008,2970,500)
+  #Comet_67P <- c(11.283,26.814,0.985,0.178,10.434,1.789,0.082,6.035,40.652,0.696,0.031,0.001,1.021,533,1000)
+  #CO_composition <- c(0.071,0.447,14.727,1.422,16.047,2.234,1.605,25.391,37.578,0.427,0.037,0.006,0.009,3100,500)
+  #CK_composition <- c(0.285,0.224,14.942,1.494,16.060,1.728,1.728,23.379,39.802,0.315,0.029,0.005,0.008,2900,500)
+  #CR_composition <- c(0.319,2.038,13.961,1.172,15.286,1.936,1.315,24.254,39.280,0.336,0.032,0.007,0.063,3110,500)
+  Water_ice <- c(11.191,0,0,0,0,0,0,0,88.809,0,0,0,0,916.9,1800)
   
   #The following material list should coincide with the selected materials in the prior block. Modify as necessary.
-  material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Comet",Comet_67P), list("CO", CO_composition), list("CK", CK_composition), list("CR", CR_composition))
+  # material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("CV",CV_composition), list("Comet",Comet_67P), list("CO", CO_composition), list("CK", CK_composition), list("CR", CR_composition))
   # material_list <- list(list("CI",CI_composition),list("CM",CM_composition),list("Comet",Comet_67P))
-  
+  # material_list <- list(list("CI",CI_composition),list("Ice",Water_ice))
+  # material_list <- list(list("CO",CO_composition))
+   material_list <- list(list("Ice",Water_ice),list("CI",CI_composition))
+   
   AccretR_main_subroutine <- function(){    
     # Initial system values
     H_mass_kg <- 0
@@ -76,20 +83,26 @@ AccretR <- function(){
     E_accretion <- 0
     Delta_T <- 0
     total_body_heat_capacity <- 0
-    total_body_radius <- 10
+    total_body_radius <- 500 #Start with a seed. For an icy moon, 10 m is appropriate. For a planet, <273 K temperatures are maintained until planet radius is = 500 m (Solomon 1979, Toksoz et al. 1978, Hanks & Anderson 1969, McSween et al. 2002).
     Temperature_diff <- 0
-    
+    T_nebula <- 30 #Temperature (K) of the nebula or CPD. For Lunine and Stevenson (1982) surface temperature calculations.
+    Temperature_LS1982 <- T_nebula #Temperature of the body surface from Lunine and Stevenson (1982), including latent heat loss from Lunine and Stevenson (1982).
+
     repeat{
       # Radius of the accreting particles, in meters. Comment out all but the relevant one.
       
       # Type A: Here, it is a random uniform distribution proportional to the total body radius (a type of runaway growth). [Quickest to run.]
-       particle_radius <- runif(1,0.1*total_body_radius,0.5*total_body_radius)
+      # particle_radius <- runif(1,0.1*total_body_radius,0.5*total_body_radius)
       
       # Type B: In this case, the particle radius is 1 to 1000 m as in the characteristic impactor size that assembled the Galilean satellites in Barr and Canup (2008), reported in Canup and Ward (2009). Barr and Canup (2008) actually calculate different particle sizes for Ganymede (6 - 30 m) and Callisto (800 - 4000 m), based on Callisto not melting while accreting. Also, particle size is proportional to 1/total body radius^2 in their models, so particle sizes become increasingly small as the satellites reach their final sizes (orderly growth). [Slow to run.]
       # particle_radius <- runif(1,1,1000)
+      # particle_radius <- 1/(total_body_radius^2) #This would take an infinite amount of time.
       
       # Type C: In this case, particles are pebbles 0.005 to 0.5 m in radius, consistent with the Ronnet et al. (2017; ApJ) scenario where Europa was built from mostly dehydrated material (0 - 50 % water) of otherwise solar composition, inside of the circumjovian snow line; i.e., Europa accreted with approximately its current bulk composition. [Very slow to run, best carried out on a HPC.]
       # particle_radius <- runif(1,0.005,0.5)
+      
+      # Type D: Super Earths are very large. Try embryos of R = 100 km +- 50 %.
+      particle_radius <- runif(n = 1, min = 0.5, max = 1.5)*100000 #in meters
       
       # Volume of the accreting particle, in m^3.
       particle_volume <- 4/3*pi*(particle_radius^3)
@@ -100,12 +113,17 @@ AccretR <- function(){
       
       # Type A: Random selection with equal probability for all materials:
       # select_material <- sample(material_list,1,replace=T)
-      # Type B: Europa selection probabilities for all carbonaceous chondrites plus comet 67P (based on distance to Jupiter's formation at 3 AU, Desch et al., 2018 ApJ):
-      select_material <- sample(material_list,1,replace=T,prob=c(6.94e-3,1.73,2.78,sample(6.94e-3:1.37e-3,1,replace=T),1.93,2.78,1.42))
-	  # Type C: Europa selection probabilities for all CI and CM carbonaceous chondrites plus comet 67P (based on distance to Jupiter's formation at 3 AU, Desch et al., 2018 ApJ):
-	  #select_material <- sample(material_list,1,replace=T,prob=c(6.94e-3,1.73,sample(6.94e-3:1.37e-3,1,replace=T)))
       
-	  unlist_vector <- unlist(select_material)
+      # Type B: Europa selection probabilities for all carbonaceous chondrites plus comet 67P (based on distance to Jupiter's formation at 3 AU, Desch et al., 2018 ApJ):
+      # select_material <- sample(material_list,1,replace=T,prob=c(6.94e-3,1.73,2.78,sample(6.94e-3:1.37e-3,1,replace=T),1.93,2.78,1.42))
+	    
+      # Type C: Europa selection probabilities for all CI and CM carbonaceous chondrites plus comet 67P (based on distance to Jupiter's formation at 3 AU, Desch et al., 2018 ApJ):
+	    #select_material <- sample(material_list,1,replace=T,prob=c(6.94e-3,1.73,sample(6.94e-3:1.37e-3,1,replace=T)))
+      
+      # Type D: probability/probability of two different materials (e.g. CI chondrite + water ice):
+       select_material <- sample(material_list,1,replace=T,prob=c(0.5,0.5))
+      
+	    unlist_vector <- unlist(select_material)
 	  
 	  #########################################
       
@@ -125,7 +143,7 @@ AccretR <- function(){
       Na_mass_kg <- Na_mass_kg + (particle_mass*as.numeric(unlist_vector[[11]]))
       K_mass_kg <- K_mass_kg + (particle_mass*as.numeric(unlist_vector[[12]]))
       Cl_mass_kg <- Cl_mass_kg + (particle_mass*as.numeric(unlist_vector[[13]]))
-      N_mass_kg <- Cl_mass_kg + (particle_mass*as.numeric(unlist_vector[[14]]))
+      N_mass_kg <- N_mass_kg + (particle_mass*as.numeric(unlist_vector[[14]]))
       
       # Normalize composition to 100 wt. %
       Sum_composition <- sum(H_mass_kg, C_mass_kg, Mg_mass_kg, Al_mass_kg, Si_mass_kg, S_mass_kg, Ca_mass_kg, Fe_mass_kg, O_mass_kg, Na_mass_kg, K_mass_kg, Cl_mass_kg)
@@ -149,37 +167,61 @@ AccretR <- function(){
       particle_heat_capacity <- as.numeric(unlist_vector[[16]])
       total_body_heat_capacity <- (total_body_heat_capacity*total_body_mass + particle_heat_capacity*particle_mass)/(total_body_mass + particle_mass)
       
-      # Calculate total body mass and radius according to specified growth track (given in Earth radii and masses, from Sotin et al. 2007 (Icarus), here modified to fit Europa OR Titan OR Enceladus specifically. Comment out one body or the other)
+      # Calculate total body mass and radius according to specified growth track (given in Earth radii and masses, from Sotin et al. 2007 (Icarus), here modified to fit specific bodies. Comment out all bodies but the one of interest)
       total_body_mass <- total_body_mass + particle_mass
       # Europa growth track:
-      total_body_radius <- ((1.072*(total_body_mass/Earth_mass_kg)^0.306)*Earth_radius_m)
+      # total_body_radius <- ((1.072*(total_body_mass/Earth_mass_kg)^0.306)*Earth_radius_m)
       # Titan growth track:
       # total_body_radius <- ((1.2705*(total_body_mass/Earth_mass_kg)^0.302)*Earth_radius_m)
       # Enceladus growth track:
-      #total_body_radius <- ((1.0709*(total_body_mass/Earth_mass_kg)^0.302)*Earth_radius_m)
+      # total_body_radius <- ((1.0709*(total_body_mass/Earth_mass_kg)^0.302)*Earth_radius_m)
+      # Ceres growth track:
+      # total_body_radius <- ((1.0754*(total_body_mass/Earth_mass_kg)^0.306)*Earth_radius_m)
+      # Ocean world (50 % water) with M/M_Earth = 1 to 10.
+       total_body_radius <- ((1.262*(total_body_mass/Earth_mass_kg)^0.275)*Earth_radius_m)
+      # Telluric World (0.05 % water) with M/M_Earth = 1 to 10.
+      # total_body_radius <- ((1.000*(total_body_mass/Earth_mass_kg)^0.274)*Earth_radius_m)
       # Density of the body:
       total_body_bulk_density <- total_body_mass/(4/3*pi*(total_body_radius^3))
       
-      # Energy and temperature equations (must come AFTER mass, radius and growth track equations). E_accretion and Temperature_diff is the energy of accretion, and temperature difference between the body's surface and the accretion disk, modified from Stevenson et al. (1986) Origins of Satellites chapter in Satellites book.
+      # Energy and temperature equations (must come AFTER mass, radius and growth track equations). E_accretion and Temperature_diff is the energy of accretion, and temperature difference between the body's surface and the accretion disk, modified from Stevenson et al. (1986) Origins of Satellites chapter in Satellites book. Also in other places (e.g., Johansen et al. 2022, A&A Eq. 19).
       E_accretion <- E_accretion + G*total_body_mass/total_body_radius
       Temperature_diff <- Temperature_diff + (G*total_body_mass)/(total_body_radius*total_body_heat_capacity)
+      
+      #An alternative calculation of the surface temperature of the accreting body can be found in Bierson and Nimmo (2020), based on Kuramoto and Matsui (1994).
+      #Temperature_BN2020 <- 
+      
+      #Yet another alternative calculation of the surface temperature, from Lunine and Stevenson (1982), Equation 25, with evaporative and sublimation cooling.
+      Particle_H2O_mass_frac <- (((particle_mass*as.numeric(unlist_vector[[2]]))*(1/1.00794)*(1/2)*((1.00794*2+15.999)/1))/total_body_mass)
+      if (Temperature_LS1982>=273.15) {
+        Temperature_LS1982 <- Temperature_LS1982 + (T_nebula + 2*pi/3*G*total_body_bulk_density*(total_body_radius^2)/total_body_heat_capacity) - (Particle_H2O_mass_frac*H2O_LHV/H2O_Cp)
+     } else {
+        Temperature_LS1982 <- max(Temperature_LS1982, T_nebula) + (2*pi/3*G*total_body_bulk_density*(total_body_radius^2)/total_body_heat_capacity) - (Particle_H2O_mass_frac*H2O_LHS/H2O_Cp)
+     }
+      
       
       # Total number of accreted particles
       N_particles=N_particles+1
       
       # Exit if radius = specified radius in meters. Comment out all but one of the bodies. Radii from JPL SSD Planetary Satellites Physical Parameters site.
       # Europa radius:
-       if (total_body_radius>=1560800) break
+      # if (total_body_radius>=1560800) break
       # Titan radius:
       # if (total_body_radius>=2574730) break
       # Enceladus radius:
       # if (total_body_radius>=252100) break
+      # Ceres radius:
+      # if (total_body_radius>=469600) break
+      # Ocean World 2*Earth radius:
+       if (total_body_radius>=Earth_radius_m*2) break
+      # Telluric World 2*Earth radius:
+      #if (total_body_radius>=Earth_radius_m*2) break
     }
-    return(list("H wt. %" = H_wt_perc, "C wt. %" = C_wt_perc, "Mg wt. %" = Mg_wt_perc, "Al wt. %" = Al_wt_perc, "Si wt. %" = Si_wt_perc, "S wt. %" = S_wt_perc, "Ca wt. %" = Ca_wt_perc, "Fe wt. %" = Fe_wt_perc, "O wt. %" = O_wt_perc, "Na wt. %" = Na_wt_perc, "K wt. %" = K_wt_perc, "Cl wt. %" = Cl_wt_perc, "N wt. %" = N_wt_perc, "body radius (m)" = total_body_radius, "body mass (kg)" = total_body_mass, "body bulk density (kg/m^3)" = total_body_bulk_density, "Energy of accretion (J/(kg*K^-1))" = E_accretion, "Temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff, "Number of particles"=N_particles))
+    return(list("H wt. %" = H_wt_perc, "C wt. %" = C_wt_perc, "Mg wt. %" = Mg_wt_perc, "Al wt. %" = Al_wt_perc, "Si wt. %" = Si_wt_perc, "S wt. %" = S_wt_perc, "Ca wt. %" = Ca_wt_perc, "Fe wt. %" = Fe_wt_perc, "O wt. %" = O_wt_perc, "Na wt. %" = Na_wt_perc, "K wt. %" = K_wt_perc, "Cl wt. %" = Cl_wt_perc, "N wt. %" = N_wt_perc, "body radius (m)" = total_body_radius, "body mass (kg)" = total_body_mass, "body bulk density (kg/m^3)" = total_body_bulk_density, "Energy of accretion (J/(kg*K^-1))" = E_accretion, "Accretion disk T (K)" = Temperature_diff, "Body surface T, with evaporative cooling (K)" = Temperature_LS1982, "Number of particles"=N_particles))
   }
   
   # Number of full bodies to build for statistics. Repeat the main subroutine X times and output all results into a transposed dataframe.
-  Total_bootstrap_run <- foreach(i=1:10000) %dopar% {AccretR_main_subroutine()}
+  Total_bootstrap_run <- foreach(i=1:100) %dopar% {AccretR_main_subroutine()}
   Total_bootstrap_run_frame <- as.data.frame((Total_bootstrap_run))
   
   # Output medians and standard deviations of the data gathered in the data frame
@@ -255,10 +297,14 @@ AccretR <- function(){
   Accretion_energy_median <- median(Accretion_energy_all_runs)
   Accretion_energy_mean <- mean(Accretion_energy_all_runs)
   Accretion_energy_sd <- sd(Accretion_energy_all_runs)
-  Temperature_diff_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Temperature.difference", colnames(Total_bootstrap_run_frame))]))
+  Temperature_diff_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("Accretion.disk", colnames(Total_bootstrap_run_frame))]))
   Temperature_diff_median <- median(Temperature_diff_all_runs)
   Temperature_diff_mean <- mean(Temperature_diff_all_runs)
   Temperature_diff_sd <- sd(Temperature_diff_all_runs)
+  Temperature_LS1982_all_runs <- as.numeric(unlist(Total_bootstrap_run_frame[, grep("with.evaporative", colnames(Total_bootstrap_run_frame))]))
+  Temperature_LS1982_median <- median(Temperature_LS1982_all_runs)
+  Temperature_LS1982_mean <- mean(Temperature_LS1982_all_runs)
+  Temperature_LS1982_sd <- sd(Temperature_LS1982_all_runs)
   #Assuming all H is in water, calculate all water available
   Max_water_wt_perc_all_runs <- H_wt_perc_all_runs*(1/1.00794)*(1/2)*((1.00794*2+15.999)/1)
   Max_water_wt_perc_median <- median(Max_water_wt_perc_all_runs)
@@ -339,7 +385,10 @@ AccretR <- function(){
   N_particles_all_runs_plot <<- ggplot(N_particles_all_runs_frame, aes(x=X..i..)) + 
     geom_histogram() + 
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + xlab("Number of accreting planetesimals") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + 
+    xlab("Number of accreting planetesimals") + 
+    theme_bw()
   
   Total_body_radius_all_runs_frame <- ldply(Total_body_radius_all_runs, data.frame)
   Total_body_radius_all_runs_plot <<- ggplot(Total_body_radius_all_runs_frame, aes(x=X..i..)) + 
@@ -372,9 +421,20 @@ AccretR <- function(){
   Temperature_diff_all_runs_plot <<- ggplot(Temperature_diff_all_runs_frame, aes(x=X..i..)) + 
     geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
     geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    scale_x_continuous(labels = scientific) + xlab("Temperature difference between body surface and accretion disk (K)") + theme_bw()
+    scale_x_continuous(labels = scientific) + 
+    xlab((expression(paste("Maximum surface-disk ", Delta,"T (K)")))) + 
+    theme_bw()
   
-  AccretR_body_result_plot <<- multiplot(N_particles_all_runs_plot, Total_body_radius_all_runs_plot, Total_body_mass_all_runs_plot, Total_body_density_all_runs_plot, Accretion_energy_all_runs_plot, Temperature_diff_all_runs_plot, cols=2)
+  Temperature_LS1982_all_runs_frame <- ldply(Temperature_LS1982_all_runs, data.frame)
+  Temperature_LS1982_all_runs_plot <<- ggplot(Temperature_LS1982_all_runs_frame, aes(x=X..i..)) + 
+    geom_histogram() + 
+    geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + 
+    xlab(expression(paste("Surface T, ", H[2],O~italic("L"), " cooling (K)"))) + 
+    theme_bw()
+  
+  AccretR_body_result_plot <<- multiplot(N_particles_all_runs_plot, Total_body_radius_all_runs_plot, Total_body_mass_all_runs_plot, Total_body_density_all_runs_plot, Accretion_energy_all_runs_plot, Temperature_diff_all_runs_plot, Temperature_LS1982_all_runs_plot, cols=2)
   
   H_wt_perc_all_runs_frame <- ldply(H_wt_perc_all_runs, data.frame)
   H_wt_perc_all_runs_plot <<- ggplot(H_wt_perc_all_runs_frame, aes(x=X..i..)) + 
@@ -470,12 +530,12 @@ AccretR <- function(){
   stopCluster(cl)
   
   # Set the output file, if wanted. Modify the file name to whatever name you like:
-  #sink("AccretR_output_Europa_MC-Scale.txt")
+  sink("AccretR_output_2REarth_waterworld.txt")
   
   # Return results
-  AccretR_result <<- (list("Median H wt. %" = H_wt_perc_median, "Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Median C wt. %" = C_wt_perc_median, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Median Mg wt. %" = Mg_wt_perc_median, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Median Al wt. %" = Al_wt_perc_median, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Median Si wt. %" = Si_wt_perc_median, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Median S wt. %" = S_wt_perc_median, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Median Ca wt. %" = Ca_wt_perc_median, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Median Fe wt. %" = Fe_wt_perc_median, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Median O wt. %" = O_wt_perc_median, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Median Na wt. %" = Na_wt_perc_median, "Mean Na wt. %" = Na_wt_perc_mean, "Standard deviation Na wt. %" = Na_wt_perc_sd, "Median K wt. %" = K_wt_perc_median, "Mean K wt. %" = K_wt_perc_mean, "Standard deviation K wt. %" = K_wt_perc_sd, "Median Cl wt. %" = Cl_wt_perc_median, "Mean Cl wt. %" = Cl_wt_perc_mean, "Standard deviation Cl wt. %" = Cl_wt_perc_sd, "Median N wt. %" = N_wt_perc_median, "Mean N wt. %" = N_wt_perc_mean, "Standard deviation N wt. %" = N_wt_perc_sd, "Median maximum H2O wt. %" = Max_water_wt_perc_median, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Median number of particles" = N_particles_median, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Median total body radius (m)" = Total_body_radius_median, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Median total body mass (kg)" = Total_body_mass_median, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Median body bulk density" = Total_body_density_median, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Median accretion energy (J)" = Accretion_energy_median, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Median temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_median, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
+  AccretR_result <<- (list("Median H wt. %" = H_wt_perc_median, "Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Median C wt. %" = C_wt_perc_median, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Median Mg wt. %" = Mg_wt_perc_median, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Median Al wt. %" = Al_wt_perc_median, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Median Si wt. %" = Si_wt_perc_median, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Median S wt. %" = S_wt_perc_median, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Median Ca wt. %" = Ca_wt_perc_median, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Median Fe wt. %" = Fe_wt_perc_median, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Median O wt. %" = O_wt_perc_median, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Median Na wt. %" = Na_wt_perc_median, "Mean Na wt. %" = Na_wt_perc_mean, "Standard deviation Na wt. %" = Na_wt_perc_sd, "Median K wt. %" = K_wt_perc_median, "Mean K wt. %" = K_wt_perc_mean, "Standard deviation K wt. %" = K_wt_perc_sd, "Median Cl wt. %" = Cl_wt_perc_median, "Mean Cl wt. %" = Cl_wt_perc_mean, "Standard deviation Cl wt. %" = Cl_wt_perc_sd, "Median N wt. %" = N_wt_perc_median, "Mean N wt. %" = N_wt_perc_mean, "Standard deviation N wt. %" = N_wt_perc_sd, "Median maximum H2O wt. %" = Max_water_wt_perc_median, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Median number of particles" = N_particles_median, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Median total body radius (m)" = Total_body_radius_median, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Median total body mass (kg)" = Total_body_mass_median, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Median body bulk density" = Total_body_density_median, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Median accretion energy (J)" = Accretion_energy_median, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Median temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_median, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Median surface temperature with evaorative cooling (K)" = Temperature_LS1982_median, "Mean surface temperature with evaorative cooling (K)" = Temperature_LS1982_mean, "Standard deviation surface temperature with evaorative cooling (K)" = Temperature_LS1982_mean, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
   return(AccretR_result)
   
   # Free up the print out sink, if the output file has been specified above. 
-  #sink()
+  sink()
 }
