@@ -146,7 +146,7 @@ AccretR <- function(){
       N_mass_kg <- N_mass_kg + (particle_mass*as.numeric(unlist_vector[[14]]))
       
       # Normalize composition to 100 wt. %
-      Sum_composition <- sum(H_mass_kg, C_mass_kg, Mg_mass_kg, Al_mass_kg, Si_mass_kg, S_mass_kg, Ca_mass_kg, Fe_mass_kg, O_mass_kg, Na_mass_kg, K_mass_kg, Cl_mass_kg)
+      Sum_composition <- sum(H_mass_kg, C_mass_kg, Mg_mass_kg, Al_mass_kg, Si_mass_kg, S_mass_kg, Ca_mass_kg, Fe_mass_kg, O_mass_kg, Na_mass_kg, K_mass_kg, Cl_mass_kg, N_mass_kg)
       H_wt_perc <- 100*H_mass_kg/Sum_composition
       C_wt_perc <- 100*C_mass_kg/Sum_composition
       Mg_wt_perc <- 100*Mg_mass_kg/Sum_composition
@@ -192,7 +192,7 @@ AccretR <- function(){
       #Temperature_BN2020 <- 
       
       #Yet another alternative calculation of the surface temperature, from Lunine and Stevenson (1982), Equation 25, with evaporative and sublimation cooling.
-      Particle_H2O_mass_frac <- (((particle_mass*as.numeric(unlist_vector[[2]]))*(1/1.00794)*(1/2)*((1.00794*2+15.999)/1))/total_body_mass)
+      Particle_H2O_mass_frac <- (((particle_mass*as.numeric(unlist_vector[[2]])/100)*(1/1.00794)*(1/2)*((1.00794*2+15.999)/1))/total_body_mass)
       if (Temperature_LS1982>=273.15) {
         Temperature_LS1982 <- Temperature_LS1982 + (T_nebula + 2*pi/3*G*total_body_bulk_density*(total_body_radius^2)/total_body_heat_capacity) - (Particle_H2O_mass_frac*H2O_LHV/H2O_Cp)
      } else {
@@ -345,187 +345,177 @@ AccretR <- function(){
     
     if (numPlots==1) {
       print(plots[[1]])
-      
+      return(invisible(plots[[1]]))
+
     } else {
       # Set up the page
       grid.newpage()
       pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-      
+
       # Make each plot, in the correct location
       for (i in 1:numPlots) {
         # Get the i,j matrix positions of the regions that contain this subplot
         matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-        
+
         print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
                                         layout.pos.col = matchidx$col))
       }
+
+      # Capture the assembled page as a grob so it can be reprinted or saved
+      # (e.g. via ggsave) after this function returns, instead of being lost
+      # as soon as the graphics device closes.
+      return(invisible(grid.grab()))
     }
   }
-  
-  # Fancy scientific labels in the ggplot graphs. Choose labels = fancy_scientific" for 10^y notation, or "scientific" for +e^y notation.
-  fancy_scientific <- function(l) {
-    # turn in to character string in scientific notation
-    l <- format(l, scientific = TRUE)
-    # Print "0 x 10\u{207a}" as 0
-    l <- gsub("0e\\+00","0",l)
-    # quote the part before the exponent to keep all the digits
-    l <- gsub("^(.*)e", "'\\1'e", l)
-    # remove + after exponent, if exists. E.g.: (3x10^+2 -> 3x10^2)
-    l <- gsub("e\\+","e",l)
-    # turn the 'e+' into plotmath format
-    l <- gsub("e", "%*%10^", l)
-    # convert 1x10^ or 1.000x10^ -> 10^ 
-    l <- gsub("\\'1[\\.0]*\\'\\%\\*\\%", "", l)
-    # return this as an expression
-    parse(text=l)
-  }
-  
+
   # AccretR histogram plots sensu strictu
   N_particles_all_runs_frame <- ldply(N_particles_all_runs, data.frame)
   N_particles_all_runs_plot <<- ggplot(N_particles_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() + 
+    geom_histogram(bins = 15) + 
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
     scale_x_continuous(labels = scientific) + 
     xlab("Number of accreting planetesimals") + 
-    theme_bw()
+    theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Total_body_radius_all_runs_frame <- ldply(Total_body_radius_all_runs, data.frame)
   Total_body_radius_all_runs_plot <<- ggplot(Total_body_radius_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  
+    geom_histogram(bins = 15) +  
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    scale_x_continuous(labels = scientific) + xlab("Total body radius (m)") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + xlab("Total body radius (m)") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Total_body_mass_all_runs_frame <- ldply(Total_body_mass_all_runs, data.frame)
   Total_body_mass_all_runs_plot <<- ggplot(Total_body_mass_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() + 
+    geom_histogram(bins = 15) + 
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    scale_x_continuous(labels = scientific) + xlab("Total body mass (kg)") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + xlab("Total body mass (kg)") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Total_body_density_all_runs_frame <- ldply(Total_body_density_all_runs, data.frame)
   Total_body_density_all_runs_plot <<- ggplot(Total_body_density_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab((expression(paste("Bulk body densities (",kg/m^3,")")))) + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab((expression(paste("Bulk body densities (",kg/m^3,")")))) + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Accretion_energy_all_runs_frame <- ldply(Accretion_energy_all_runs, data.frame)
   Accretion_energy_all_runs_plot <<- ggplot(Accretion_energy_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  
+    geom_histogram(bins = 15) +  
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    scale_x_continuous(labels = scientific) + xlab("Accretion energies (J)") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    scale_x_continuous(labels = scientific) + xlab("Accretion energies (J)") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Temperature_diff_all_runs_frame <- ldply(Temperature_diff_all_runs, data.frame)
   Temperature_diff_all_runs_plot <<- ggplot(Temperature_diff_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
     scale_x_continuous(labels = scientific) + 
     xlab((expression(paste("Maximum surface-disk ", Delta,"T (K)")))) + 
-    theme_bw()
+    theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Temperature_LS1982_all_runs_frame <- ldply(Temperature_LS1982_all_runs, data.frame)
   Temperature_LS1982_all_runs_plot <<- ggplot(Temperature_LS1982_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() + 
+    geom_histogram(bins = 15) + 
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
     scale_x_continuous(labels = scientific) + 
     xlab(expression(paste("Surface T, ", H[2],O~italic("L"), " cooling (K)"))) + 
-    theme_bw()
+    theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   AccretR_body_result_plot <<- multiplot(N_particles_all_runs_plot, Total_body_radius_all_runs_plot, Total_body_mass_all_runs_plot, Total_body_density_all_runs_plot, Accretion_energy_all_runs_plot, Temperature_diff_all_runs_plot, Temperature_LS1982_all_runs_plot, cols=2)
-  
+  ggsave("AccretR_body_result_plot.png", plot = AccretR_body_result_plot, width = 10, height = 12, dpi = 300)
+
   H_wt_perc_all_runs_frame <- ldply(H_wt_perc_all_runs, data.frame)
   H_wt_perc_all_runs_plot <<- ggplot(H_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  
+    geom_histogram(bins = 15) +  
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk H wt. %") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk H wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   C_wt_perc_all_runs_frame <- ldply(C_wt_perc_all_runs, data.frame)
   C_wt_perc_all_runs_plot <<- ggplot(C_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  
+    geom_histogram(bins = 15) +  
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk C wt. %") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk C wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Mg_wt_perc_all_runs_frame <- ldply(Mg_wt_perc_all_runs, data.frame)
   Mg_wt_perc_all_runs_plot <<- ggplot(Mg_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  
+    geom_histogram(bins = 15) +  
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk Mg wt. %") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk Mg wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Al_wt_perc_all_runs_frame <- ldply(Al_wt_perc_all_runs, data.frame)
   Al_wt_perc_all_runs_plot <<- ggplot(Al_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk Al wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk Al wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Si_wt_perc_all_runs_frame <- ldply(Si_wt_perc_all_runs, data.frame)
   Si_wt_perc_all_runs_plot <<- ggplot(Si_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk Si wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk Si wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   S_wt_perc_all_runs_frame <- ldply(S_wt_perc_all_runs, data.frame)
   S_wt_perc_all_runs_plot <<- ggplot(S_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  
+    geom_histogram(bins = 15) +  
     geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk S wt. %") + theme_bw()
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk S wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Ca_wt_perc_all_runs_frame <- ldply(Ca_wt_perc_all_runs, data.frame)
   Ca_wt_perc_all_runs_plot <<- ggplot(Ca_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk Ca wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk Ca wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Fe_wt_perc_all_runs_frame <- ldply(Fe_wt_perc_all_runs, data.frame)
   Fe_wt_perc_all_runs_plot <<- ggplot(Fe_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk Fe wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk Fe wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   O_wt_perc_all_runs_frame <- ldply(O_wt_perc_all_runs, data.frame)
   O_wt_perc_all_runs_plot <<- ggplot(O_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk O wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk O wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Na_wt_perc_all_runs_frame <- ldply(Na_wt_perc_all_runs, data.frame)
   Na_wt_perc_all_runs_plot <<- ggplot(Na_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk Na wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk Na wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   K_wt_perc_all_runs_frame <- ldply(K_wt_perc_all_runs, data.frame)
   K_wt_perc_all_runs_plot <<- ggplot(K_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk K wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk K wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Cl_wt_perc_all_runs_frame <- ldply(Cl_wt_perc_all_runs, data.frame)
   Cl_wt_perc_all_runs_plot <<- ggplot(Cl_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk Cl wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk Cl wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   N_wt_perc_all_runs_frame <- ldply(N_wt_perc_all_runs, data.frame)
   N_wt_perc_all_runs_plot <<- ggplot(N_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab("Bulk N wt. %") + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab("Bulk N wt. %") + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   Max_water_wt_perc_all_runs_frame <- ldply(Max_water_wt_perc_all_runs, data.frame)
   Max_water_wt_perc_all_runs_plot <<- ggplot(Max_water_wt_perc_all_runs_frame, aes(x=X..i..)) + 
-    geom_histogram() +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
-    geom_vline(aes(xintercept=mean(X..i..)), color="yellow", linetype="dotdash") + 
-    xlab((expression(paste("Maximal ", H[2],"O wt. %")))) + theme_bw()
+    geom_histogram(bins = 15) +  geom_vline(aes(xintercept=median(X..i..)), color="red", linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(X..i..)), color="blue", linetype="dotdash") + 
+    xlab((expression(paste("Maximal ", H[2],"O wt. %")))) + theme_bw() + labs(caption = "Red dashed = median; blue dot-dash = mean")
   
   AccretR_composition_result_plot <<- multiplot(H_wt_perc_all_runs_plot, C_wt_perc_all_runs_plot, Mg_wt_perc_all_runs_plot, Al_wt_perc_all_runs_plot, Si_wt_perc_all_runs_plot, S_wt_perc_all_runs_plot, Ca_wt_perc_all_runs_plot, Fe_wt_perc_all_runs_plot, O_wt_perc_all_runs_plot, Na_wt_perc_all_runs_plot, K_wt_perc_all_runs_plot, Cl_wt_perc_all_runs_plot, N_wt_perc_all_runs_plot,Max_water_wt_perc_all_runs_plot, cols=3)
-  
+  ggsave("AccretR_composition_result_plot.png", plot = AccretR_composition_result_plot, width = 14, height = 16, dpi = 300)
+
   # Free up the cores in the cluster
   stopCluster(cl)
   
@@ -533,9 +523,11 @@ AccretR <- function(){
   sink("AccretR_output_2REarth_waterworld.txt")
   
   # Return results
-  AccretR_result <<- (list("Median H wt. %" = H_wt_perc_median, "Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Median C wt. %" = C_wt_perc_median, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Median Mg wt. %" = Mg_wt_perc_median, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Median Al wt. %" = Al_wt_perc_median, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Median Si wt. %" = Si_wt_perc_median, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Median S wt. %" = S_wt_perc_median, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Median Ca wt. %" = Ca_wt_perc_median, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Median Fe wt. %" = Fe_wt_perc_median, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Median O wt. %" = O_wt_perc_median, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Median Na wt. %" = Na_wt_perc_median, "Mean Na wt. %" = Na_wt_perc_mean, "Standard deviation Na wt. %" = Na_wt_perc_sd, "Median K wt. %" = K_wt_perc_median, "Mean K wt. %" = K_wt_perc_mean, "Standard deviation K wt. %" = K_wt_perc_sd, "Median Cl wt. %" = Cl_wt_perc_median, "Mean Cl wt. %" = Cl_wt_perc_mean, "Standard deviation Cl wt. %" = Cl_wt_perc_sd, "Median N wt. %" = N_wt_perc_median, "Mean N wt. %" = N_wt_perc_mean, "Standard deviation N wt. %" = N_wt_perc_sd, "Median maximum H2O wt. %" = Max_water_wt_perc_median, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Median number of particles" = N_particles_median, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Median total body radius (m)" = Total_body_radius_median, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Median total body mass (kg)" = Total_body_mass_median, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Median body bulk density" = Total_body_density_median, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Median accretion energy (J)" = Accretion_energy_median, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Median temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_median, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Median surface temperature with evaorative cooling (K)" = Temperature_LS1982_median, "Mean surface temperature with evaorative cooling (K)" = Temperature_LS1982_mean, "Standard deviation surface temperature with evaorative cooling (K)" = Temperature_LS1982_mean, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
-  return(AccretR_result)
-  
-  # Free up the print out sink, if the output file has been specified above. 
+  AccretR_result <<- (list("Median H wt. %" = H_wt_perc_median, "Mean H wt. %" = H_wt_perc_mean, "Standard deviation H wt. %" = H_wt_perc_sd, "Median C wt. %" = C_wt_perc_median, "Mean C wt. %" = C_wt_perc_mean, "Standard deviation C wt. %" = C_wt_perc_sd, "Median Mg wt. %" = Mg_wt_perc_median, "Mean Mg wt. %" = Mg_wt_perc_mean, "Standard deviation Mg wt. %" = Mg_wt_perc_sd, "Median Al wt. %" = Al_wt_perc_median, "Mean Al wt. %" = Al_wt_perc_mean, "Standard deviation Al wt. %" = Al_wt_perc_sd, "Median Si wt. %" = Si_wt_perc_median, "Mean Si wt. %" = Si_wt_perc_mean, "Standard deviation Si wt. %" = Si_wt_perc_sd, "Median S wt. %" = S_wt_perc_median, "Mean S wt. %" = S_wt_perc_mean, "Standard deviation S wt. %" = S_wt_perc_sd, "Median Ca wt. %" = Ca_wt_perc_median, "Mean Ca wt. %" = Ca_wt_perc_mean, "Standard deviation Ca wt. %" = Ca_wt_perc_sd, "Median Fe wt. %" = Fe_wt_perc_median, "Mean Fe wt. %" = Fe_wt_perc_mean, "Standard deviation Fe wt. %" = Fe_wt_perc_sd, "Median O wt. %" = O_wt_perc_median, "Mean O wt. %" = O_wt_perc_mean, "Standard deviation O wt. %" = O_wt_perc_sd, "Median Na wt. %" = Na_wt_perc_median, "Mean Na wt. %" = Na_wt_perc_mean, "Standard deviation Na wt. %" = Na_wt_perc_sd, "Median K wt. %" = K_wt_perc_median, "Mean K wt. %" = K_wt_perc_mean, "Standard deviation K wt. %" = K_wt_perc_sd, "Median Cl wt. %" = Cl_wt_perc_median, "Mean Cl wt. %" = Cl_wt_perc_mean, "Standard deviation Cl wt. %" = Cl_wt_perc_sd, "Median N wt. %" = N_wt_perc_median, "Mean N wt. %" = N_wt_perc_mean, "Standard deviation N wt. %" = N_wt_perc_sd, "Median maximum H2O wt. %" = Max_water_wt_perc_median, "Mean maximum H2O wt. %" = Max_water_wt_perc_mean, "Standard deviation maximum H2O wt. %" = Max_water_wt_perc_sd, "Median number of particles" = N_particles_median, "Mean number of particles" = N_particles_mean, "Standard deviation number of particles" = N_particles_sd, "Median total body radius (m)" = Total_body_radius_median, "Mean total body radius (m)" = Total_body_radius_mean, "Standard deviation total body radius (m)" = Total_body_radius_sd, "Median total body mass (kg)" = Total_body_mass_median, "Mean total body mass (kg)" = Total_body_mass_mean, "Standard deviation total body mass (kg)" = Total_body_mass_sd, "Median body bulk density" = Total_body_density_median, "Mean body bulk density" = Total_body_density_mean, "Standard deviation body bulk density" = Total_body_density_sd, "Median accretion energy (J)" = Accretion_energy_median, "Mean accretion energy (J)" = Accretion_energy_mean, "Standard deviation accretion energy (J)" = Accretion_energy_sd, "Median temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_median, "Mean temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_mean, "Standard deviation temperature difference at body surface over accretion disk temperature (K)" = Temperature_diff_sd, "Median surface temperature with evaorative cooling (K)" = Temperature_LS1982_median, "Mean surface temperature with evaorative cooling (K)" = Temperature_LS1982_mean, "Standard deviation surface temperature with evaorative cooling (K)" = Temperature_LS1982_sd, "Workers used" = Workers_used, "Elapsed time" = proc.time()-time_stamp))
+
+  # Write the results to the output file, then free up the print out sink.
+  print(AccretR_result)
   sink()
+
+  return(AccretR_result)
 }
