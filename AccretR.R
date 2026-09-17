@@ -103,6 +103,9 @@ AccretR <- function(body = "OceanWorld",
   # Number of workers/cores used for parallelization.
   cl <- makeCluster(cores)
   registerDoParallel(cl)
+  # Cluster workers start with empty environments, so the physical constants and
+  # material compositions defined at the top of this script must be exported explicitly.
+  clusterExport(cl, varlist = ls(envir = globalenv()), envir = globalenv())
 
   AccretR_main_subroutine <- function(){
     # Initial system values
