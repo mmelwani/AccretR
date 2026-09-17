@@ -17,7 +17,7 @@
 # Author contact details:
 # Mohit Melwani Daswani
 # melwani.mohit@gmail.com
-# Latest update: 31st October 2022.
+# Latest update: 17th September 2026.
 
 # Invariant physical constants:
 Earth_mass_kg <- 5.972e+24
